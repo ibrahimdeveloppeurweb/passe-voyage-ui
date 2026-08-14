@@ -1,0 +1,85 @@
+<div class="row">
+  <div class="col-md-12 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h5 class="mb-0">Villes & Gares d'embarquement</h5>
+          <button class="btn btn-primary btn-icon-text" (click)="openModal(addGareModal)">
+            <i class="feather icon-plus btn-icon-prepend"></i>
+            Nouvelle Gare
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th>Ville</th>
+                <th>Nom de la Gare</th>
+                <th>Compagnie Associée</th>
+                <th>Statut</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let gare of gares">
+                <td><strong>{{ gare.ville }}</strong></td>
+                <td>{{ gare.nom }}</td>
+                <td>
+                  <span class="badge" [ngClass]="{'bg-primary': gare.compagnie === 'UTB', 'bg-secondary': gare.compagnie === 'Toutes'}">
+                    {{ gare.compagnie }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge" [ngClass]="{'bg-success': gare.statut === 'Actif', 'bg-danger': gare.statut === 'Inactif'}">
+                    {{ gare.statut }}
+                  </span>
+                </td>
+                <td>
+                  <button class="btn btn-sm btn-outline-primary btn-icon me-2">
+                    <i class="feather icon-edit-2"></i>
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger btn-icon">
+                    <i class="feather icon-trash-2"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Template -->
+<ng-template #addGareModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">Ajouter une Gare</h5>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+  <div class="modal-body">
+    <form>
+      <div class="mb-3">
+        <label class="form-label">Ville</label>
+        <input type="text" class="form-control" name="gareVille" [(ngModel)]="newGare.ville" placeholder="Ex: San-Pédro">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Nom de la Gare</label>
+        <input type="text" class="form-control" name="gareNom" [(ngModel)]="newGare.nom" placeholder="Ex: Gare Routière de San-Pédro">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Compagnie Associée</label>
+        <select class="form-select" name="gareCompagnie" [(ngModel)]="newGare.compagnie">
+          <option value="Toutes">Toutes les compagnies</option>
+          <option value="UTB">UTB</option>
+          <option value="MT">MT</option>
+        </select>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="modal.close('cancel')">Annuler</button>
+    <button type="button" class="btn btn-primary" (click)="modal.close('save')" [disabled]="!newGare.ville.trim() || !newGare.nom.trim()">Enregistrer</button>
+  </div>
+</ng-template>

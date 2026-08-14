@@ -1,0 +1,54 @@
+<div class="row">
+  <div class="col-md-12 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h5 class="mb-0">Créances en cours</h5>
+            <p class="text-muted mt-1" style="font-size: 13px;">Liste des crédits de voyage non remboursés.</p>
+          </div>
+          <div class="text-end">
+            <span class="text-muted d-block" style="font-size: 12px;">Total à recouvrer</span>
+            <h4 class="text-danger fw-bold mb-0">{{ totalCreances | number:'1.0-0' }} FCFA</h4>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th>Réf. Crédit</th>
+                <th>Passager</th>
+                <th>Date d'Émission</th>
+                <th class="text-end">Montant Dû (FCFA)</th>
+                <th>Retard (Jours)</th>
+                <th>Statut</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let creance of creances">
+                <td><strong>{{ creance.id }}</strong></td>
+                <td>{{ creance.passager }}</td>
+                <td>{{ creance.dateEmission }}</td>
+                <td class="text-end fw-bold text-danger">{{ creance.montant | number:'1.0-0' }}</td>
+                <td>{{ creance.joursRetard }} j</td>
+                <td>
+                  <span class="badge" 
+                        [ngClass]="{'bg-success': creance.statut === 'Dans les temps', 'bg-warning': creance.statut === 'En retard', 'bg-danger': creance.statut === 'Critique'}">
+                    {{ creance.statut }}
+                  </span>
+                </td>
+                <td>
+                  <button class="btn btn-sm btn-outline-primary btn-icon" title="Voir détail">
+                    <i class="feather icon-eye"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

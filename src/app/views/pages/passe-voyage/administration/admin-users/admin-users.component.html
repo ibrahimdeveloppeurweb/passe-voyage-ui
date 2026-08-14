@@ -1,0 +1,92 @@
+<div class="row">
+  <div class="col-md-12 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h5 class="mb-0">Membres de l'équipe</h5>
+          <button class="btn btn-primary btn-icon-text" (click)="openModal(addUserModal)">
+            <i class="feather icon-plus btn-icon-prepend"></i>
+            Nouvel Utilisateur
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th>Nom & Prénom</th>
+                <th>Email</th>
+                <th>Rôle</th>
+                <th>Statut</th>
+                <th>Dernière Connexion</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let user of users">
+                <td>{{ user.name }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.role }}</td>
+                <td>
+                  <span class="badge" [ngClass]="{'bg-success': user.status === 'Actif', 'bg-secondary': user.status === 'Inactif'}">
+                    {{ user.status }}
+                  </span>
+                </td>
+                <td>{{ user.date }}</td>
+                <td>
+                  <button class="btn btn-sm btn-outline-primary btn-icon me-2">
+                    <i class="feather icon-edit-2"></i>
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger btn-icon">
+                    <i class="feather icon-trash-2"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Template -->
+<ng-template #addUserModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">Ajouter un collaborateur</h5>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+  <div class="modal-body">
+    <form>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Nom & Prénom</label>
+          <input type="text" class="form-control" name="userName" [(ngModel)]="newUser.name" placeholder="Ex: Jean Dupont">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-control" name="userEmail" [(ngModel)]="newUser.email" placeholder="jean@passevoyage.ci">
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Rôle</label>
+          <select class="form-select" name="userRole" [(ngModel)]="newUser.role">
+            <option value="Super Admin">Super Admin</option>
+            <option value="Finance">Finance</option>
+            <option value="Manager Terrain">Manager Terrain</option>
+          </select>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Mot de passe temporaire</label>
+          <input type="password" class="form-control" value="PasseVoyage2026" disabled>
+          <small class="text-muted mt-1">Généré automatiquement</small>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="modal.close('cancel')">Annuler</button>
+    <button type="button" class="btn btn-primary" (click)="modal.close('save')" [disabled]="!newUser.name.trim() || !newUser.email.trim()">Ajouter l'utilisateur</button>
+  </div>
+</ng-template>

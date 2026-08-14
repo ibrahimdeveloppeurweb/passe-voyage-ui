@@ -1,0 +1,129 @@
+<div class="row">
+  <div class="col-md-4 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Rôles Système</h5>
+        <p class="text-muted mb-4">Gérez les différents niveaux d'accès au backoffice.</p>
+        
+        <div class="list-group">
+          <a href="javascript:void(0);" class="list-group-item list-group-item-action" 
+             *ngFor="let role of roles; let first = first" 
+             [class.active]="first">
+            <div class="d-flex w-100 justify-content-between">
+              <h6 class="mb-1">{{ role.name }}</h6>
+              <span class="badge bg-light text-dark rounded-pill">{{ role.usersCount }}</span>
+            </div>
+            <p class="mb-1 mt-2 text-wrap" style="font-size: 13px;">{{ role.desc }}</p>
+          </a>
+        </div>
+
+        <button class="btn btn-outline-primary w-100 mt-4" (click)="openModal(addRoleModal)">
+          <i class="feather icon-plus me-1"></i> Nouveau Rôle
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Template -->
+  <ng-template #addRoleModal let-modal>
+    <div class="modal-header">
+      <h5 class="modal-title">Ajouter un nouveau rôle</h5>
+      <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+    </div>
+    <div class="modal-body">
+      <form>
+        <div class="mb-3">
+          <label class="form-label">Nom du rôle</label>
+          <input type="text" class="form-control" name="roleName" [(ngModel)]="newRoleName" placeholder="Ex: Superviseur">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Description</label>
+          <textarea class="form-control" name="roleDesc" [(ngModel)]="newRoleDesc" rows="3" placeholder="Description brève des accès"></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="modal.close('cancel')">Annuler</button>
+      <button type="button" class="btn btn-primary" (click)="modal.close('save')" [disabled]="!newRoleName.trim()">Enregistrer</button>
+    </div>
+  </ng-template>
+
+  <div class="col-md-8 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Permissions : Super Admin</h5>
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Module</th>
+                <th class="text-center">Lecture</th>
+                <th class="text-center">Écriture</th>
+                <th class="text-center">Suppression</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Crédits & Billets</td>
+                <td class="text-center">
+                  <div class="form-check form-switch d-flex justify-content-center">
+                    <input type="checkbox" class="form-check-input" checked>
+                  </div>
+                </td>
+                <td class="text-center">
+                  <div class="form-check form-switch d-flex justify-content-center">
+                    <input type="checkbox" class="form-check-input" checked>
+                  </div>
+                </td>
+                <td class="text-center">
+                  <div class="form-check form-switch d-flex justify-content-center">
+                    <input type="checkbox" class="form-check-input" checked>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>Recouvrements</td>
+                <td class="text-center">
+                  <div class="form-check form-switch d-flex justify-content-center">
+                    <input type="checkbox" class="form-check-input" checked>
+                  </div>
+                </td>
+                <td class="text-center">
+                  <div class="form-check form-switch d-flex justify-content-center">
+                    <input type="checkbox" class="form-check-input" checked>
+                  </div>
+                </td>
+                <td class="text-center">
+                  <div class="form-check form-switch d-flex justify-content-center">
+                    <input type="checkbox" class="form-check-input">
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>Passagers</td>
+                <td class="text-center">
+                  <div class="form-check form-switch d-flex justify-content-center">
+                    <input type="checkbox" class="form-check-input" checked>
+                  </div>
+                </td>
+                <td class="text-center">
+                  <div class="form-check form-switch d-flex justify-content-center">
+                    <input type="checkbox" class="form-check-input" checked>
+                  </div>
+                </td>
+                <td class="text-center">
+                  <div class="form-check form-switch d-flex justify-content-center">
+                    <input type="checkbox" class="form-check-input" checked>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="mt-4 text-end">
+          <button class="btn btn-primary">Enregistrer les permissions</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

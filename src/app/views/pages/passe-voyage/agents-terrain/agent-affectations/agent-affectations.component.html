@@ -1,0 +1,93 @@
+<div class="row">
+  <div class="col-md-12 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h5 class="mb-0">Affectations des Agents</h5>
+          <button class="btn btn-primary btn-icon-text" (click)="openModal(addAffectationModal)">
+            <i class="feather icon-plus btn-icon-prepend"></i>
+            Nouvelle Affectation
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th>Agent</th>
+                <th>Lieu / Gare</th>
+                <th>Date</th>
+                <th>Horaires</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let aff of affectations">
+                <td><strong>{{ aff.agent }}</strong></td>
+                <td>{{ aff.lieu }}</td>
+                <td>{{ aff.date }}</td>
+                <td><span class="badge bg-secondary">{{ aff.heureDebut }} - {{ aff.heureFin }}</span></td>
+                <td>
+                  <button class="btn btn-sm btn-outline-primary btn-icon me-2">
+                    <i class="feather icon-edit-2"></i>
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger btn-icon">
+                    <i class="feather icon-trash-2"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Template -->
+<ng-template #addAffectationModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">Créer une Affectation</h5>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+  <div class="modal-body">
+    <form>
+      <div class="mb-3">
+        <label class="form-label">Sélectionner l'Agent</label>
+        <select class="form-select" name="affAgent" [(ngModel)]="newAffectation.agent">
+          <option value="" disabled selected>Choisir un agent...</option>
+          <option value="Koffi Yao (AG-001)">Koffi Yao (AG-001)</option>
+          <option value="Sanogo Moussa (AG-002)">Sanogo Moussa (AG-002)</option>
+          <option value="Ouattara Fatou (AG-003)">Ouattara Fatou (AG-003)</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Gare d'Affectation</label>
+        <select class="form-select" name="affLieu" [(ngModel)]="newAffectation.lieu">
+          <option value="" disabled selected>Choisir une gare...</option>
+          <option value="Gare Adjamé Renault">Gare Adjamé Renault</option>
+          <option value="Gare Routière de Bouaké">Gare Routière de Bouaké</option>
+          <option value="Gare Principale Yakro">Gare Principale Yakro</option>
+        </select>
+      </div>
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Date</label>
+          <input type="date" class="form-control" name="affDate" [(ngModel)]="newAffectation.date">
+        </div>
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Heure Début</label>
+          <input type="time" class="form-control" name="affDebut" [(ngModel)]="newAffectation.heureDebut">
+        </div>
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Heure Fin</label>
+          <input type="time" class="form-control" name="affFin" [(ngModel)]="newAffectation.heureFin">
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="modal.close('cancel')">Annuler</button>
+    <button type="button" class="btn btn-primary" (click)="modal.close('save')" [disabled]="!newAffectation.agent || !newAffectation.lieu">Enregistrer</button>
+  </div>
+</ng-template>

@@ -1,0 +1,81 @@
+<div class="row">
+  <div class="col-md-12 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h5 class="mb-0">Suivi des Fonds de Roulement</h5>
+            <p class="text-muted mt-1" style="font-size: 13px;">Suivi de la consommation du préfinancement alloué aux compagnies.</p>
+          </div>
+          <button class="btn btn-outline-primary btn-icon-text" (click)="openModal(addFondModal)">
+            <i class="feather icon-plus btn-icon-prepend"></i>
+            Ajouter un Fonds
+          </button>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-4" *ngFor="let fond of fonds">
+            <div class="card border">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h6 class="card-title mb-0">{{ fond.compagnie }}</h6>
+                  <span class="badge" [ngClass]="{'bg-success': fond.statut === 'Normal', 'bg-danger': fond.statut === 'Critique'}">
+                    {{ fond.statut }}
+                  </span>
+                </div>
+                
+                <div class="d-flex justify-content-between text-muted mb-2">
+                  <span>Fonds Total: {{ fond.totalFonds | number:'1.0-0' }} FCFA</span>
+                  <span>Restant: <strong [ngClass]="{'text-danger': fond.statut === 'Critique'}">{{ fond.reste | number:'1.0-0' }} FCFA</strong></span>
+                </div>
+                
+                <div class="progress mb-2" style="height: 10px;">
+                  <div class="progress-bar" 
+                       role="progressbar" 
+                       [style.width]="fond.pourcentage + '%'"
+                       [ngClass]="{'bg-success': fond.pourcentage < 75, 'bg-warning': fond.pourcentage >= 75 && fond.pourcentage < 90, 'bg-danger': fond.pourcentage >= 90}"
+                       [attr.aria-valuenow]="fond.pourcentage" 
+                       aria-valuemin="0" 
+                       aria-valuemax="100"></div>
+                </div>
+                <small class="text-muted">{{ fond.pourcentage }}% consommé ({{ fond.consomme | number:'1.0-0' }} FCFA)</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Template -->
+<ng-template #addFondModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">Allouer un Nouveau Fonds</h5>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+  <div class="modal-body">
+    <form>
+      <div class="mb-3">
+        <label class="form-label">Compagnie Partenaire</label>
+        <select class="form-select" name="fondCompagnie" [(ngModel)]="newFond.compagnie">
+          <option value="UTB">UTB</option>
+          <option value="MT">MT</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Montant Alloué (FCFA)</label>
+        <div class="input-group">
+          <input type="number" class="form-control" name="fondMontant" [(ngModel)]="newFond.montant" placeholder="Ex: 10000000">
+          <span class="input-group-text">FCFA</span>
+        </div>
+        <small class="text-muted mt-1">Ce montant sera le nouveau préfinancement disponible.</small>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="modal.close('cancel')">Annuler</button>
+    <button type="button" class="btn btn-primary" (click)="modal.close('save')" [disabled]="!newFond.compagnie || newFond.montant <= 0">Allouer le fonds</button>
+  </div>
+</ng-template>

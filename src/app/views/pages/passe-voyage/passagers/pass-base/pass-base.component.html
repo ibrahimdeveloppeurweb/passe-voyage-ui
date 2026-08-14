@@ -1,0 +1,82 @@
+<div class="row">
+  <div class="col-md-12 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h5 class="mb-0">Base des Passagers</h5>
+          <button class="btn btn-primary btn-icon-text" (click)="openModal(addPassagerModal)">
+            <i class="feather icon-plus btn-icon-prepend"></i>
+            Nouveau Passager
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th>ID Passager</th>
+                <th>Nom Complet</th>
+                <th>Téléphone</th>
+                <th>Date Inscription</th>
+                <th class="text-end">Solde Crédit (FCFA)</th>
+                <th>Statut</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let pass of passagers">
+                <td><strong>{{ pass.id }}</strong></td>
+                <td>{{ pass.nom }}</td>
+                <td>{{ pass.telephone }}</td>
+                <td>{{ pass.inscription }}</td>
+                <td class="text-end fw-bold" [ngClass]="{'text-danger': pass.solde < 0, 'text-success': pass.solde > 0}">
+                  {{ pass.solde | number:'1.0-0' }}
+                </td>
+                <td>
+                  <span class="badge" [ngClass]="{'bg-success': pass.statut === 'Actif', 'bg-danger': pass.statut === 'Bloqué'}">
+                    {{ pass.statut }}
+                  </span>
+                </td>
+                <td>
+                  <button class="btn btn-sm btn-outline-primary btn-icon me-2" title="Modifier">
+                    <i class="feather icon-edit-2"></i>
+                  </button>
+                  <button class="btn btn-sm btn-outline-secondary btn-icon" title="Voir détails">
+                    <i class="feather icon-eye"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Template -->
+<ng-template #addPassagerModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">Inscrire un Passager</h5>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+  <div class="modal-body">
+    <form>
+      <div class="mb-3">
+        <label class="form-label">Nom Complet</label>
+        <input type="text" class="form-control" name="passNom" [(ngModel)]="newPassager.nom" placeholder="Ex: Diallo Amadou">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Numéro de Téléphone</label>
+        <input type="tel" class="form-control" name="passTel" [(ngModel)]="newPassager.telephone" placeholder="Ex: 07 88 99 00 11">
+      </div>
+      <p class="text-muted small mt-2">
+        <i class="feather icon-info"></i> Le mot de passe initial sera envoyé par SMS au passager.
+      </p>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="modal.close('cancel')">Annuler</button>
+    <button type="button" class="btn btn-primary" (click)="modal.close('save')" [disabled]="!newPassager.nom.trim() || !newPassager.telephone.trim()">Enregistrer</button>
+  </div>
+</ng-template>

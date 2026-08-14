@@ -1,0 +1,77 @@
+<div class="row">
+  <div class="col-md-12 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h5 class="mb-0">Compagnies Partenaires</h5>
+          <button class="btn btn-primary btn-icon-text" (click)="openModal(addCompagnieModal)">
+            <i class="feather icon-plus btn-icon-prepend"></i>
+            Nouvelle Compagnie
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th>Nom de la Compagnie</th>
+                <th>Email de Contact</th>
+                <th>Téléphone</th>
+                <th>Statut</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let comp of compagnies">
+                <td><strong>{{ comp.nom }}</strong></td>
+                <td>{{ comp.contact }}</td>
+                <td>{{ comp.telephone }}</td>
+                <td>
+                  <span class="badge" [ngClass]="{'bg-primary': comp.statut === 'Partenaire Principal', 'bg-info': comp.statut === 'Partenaire Actif'}">
+                    {{ comp.statut }}
+                  </span>
+                </td>
+                <td>
+                  <button class="btn btn-sm btn-outline-primary btn-icon me-2">
+                    <i class="feather icon-edit-2"></i>
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger btn-icon">
+                    <i class="feather icon-trash-2"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Template -->
+<ng-template #addCompagnieModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">Ajouter une Compagnie</h5>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+  <div class="modal-body">
+    <form>
+      <div class="mb-3">
+        <label class="form-label">Nom de la Compagnie</label>
+        <input type="text" class="form-control" name="compNom" [(ngModel)]="newCompagnie.nom" placeholder="Ex: UTB">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Email de Contact</label>
+        <input type="email" class="form-control" name="compEmail" [(ngModel)]="newCompagnie.contact" placeholder="contact@utb.ci">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Téléphone</label>
+        <input type="text" class="form-control" name="compTel" [(ngModel)]="newCompagnie.telephone" placeholder="Ex: 01 02 03 04 05">
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="modal.close('cancel')">Annuler</button>
+    <button type="button" class="btn btn-primary" (click)="modal.close('save')" [disabled]="!newCompagnie.nom.trim()">Enregistrer</button>
+  </div>
+</ng-template>

@@ -1,0 +1,66 @@
+<div class="row">
+  <div class="col-md-12 mb-4">
+    <h4 class="mb-1">Paramètres & Plafonds de Crédit</h4>
+    <p class="text-muted">Définissez les règles d'octroi de crédit selon le profil du passager.</p>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-4 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Profil : Nouvel Utilisateur</h5>
+        <h2 class="mt-3 mb-3 fw-bold">{{ plafonds.nouvelUtilisateur | number:'1.0-0' }} <span class="fs-5 text-muted">FCFA</span></h2>
+        <p class="text-muted mb-4">Plafond maximum autorisé pour les clients inscrits depuis moins de 3 mois avec un historique vierge.</p>
+        <button class="btn btn-outline-primary btn-block" (click)="modifierPlafond('Nouvel Utilisateur', 'nouvelUtilisateur')">Modifier le plafond</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Profil : Standard</h5>
+        <h2 class="mt-3 mb-3 fw-bold">{{ plafonds.standard | number:'1.0-0' }} <span class="fs-5 text-muted">FCFA</span></h2>
+        <p class="text-muted mb-4">Plafond standard pour les utilisateurs ayant remboursé au moins 3 crédits sans incident.</p>
+        <button class="btn btn-outline-primary btn-block" (click)="modifierPlafond('Standard', 'standard')">Modifier le plafond</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title text-warning">Profil : VIP (Fidèle)</h5>
+        <h2 class="mt-3 mb-3 fw-bold text-warning">{{ plafonds.vip | number:'1.0-0' }} <span class="fs-5 text-muted">FCFA</span></h2>
+        <p class="text-muted mb-4">Plafond étendu pour les très bons clients ayant un score supérieur à 85/100.</p>
+        <button class="btn btn-outline-warning btn-block" (click)="modifierPlafond('VIP (Fidèle)', 'vip')">Modifier le plafond</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-2">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Paramètres Généraux de l'Algorithme</h5>
+        <form>
+          <div class="mb-3 form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="autoApprove" name="autoApprove" [(ngModel)]="regles.autoApprove">
+            <label class="form-check-label" for="autoApprove">
+              <strong>Approbation automatique</strong> : Accepter automatiquement les demandes si le montant est inférieur au plafond du profil.
+            </label>
+          </div>
+          <div class="mb-3 form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="autoReject" name="autoReject" [(ngModel)]="regles.autoReject">
+            <label class="form-check-label" for="autoReject">
+              <strong>Rejet automatique (Blacklist)</strong> : Refuser systématiquement les demandes des utilisateurs ayant un retard de paiement en cours.
+            </label>
+          </div>
+          <button type="button" class="btn btn-primary mt-2" (click)="sauvegarderRegles()">Sauvegarder les règles</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

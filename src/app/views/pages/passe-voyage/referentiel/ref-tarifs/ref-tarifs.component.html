@@ -1,0 +1,90 @@
+<div class="row">
+  <div class="col-md-12 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h5 class="mb-0">Grille Tarifaire de Base</h5>
+            <p class="text-muted mt-1" style="font-size: 13px;">Ces prix servent de base pour le calcul du crédit accordé aux passagers.</p>
+          </div>
+          <button class="btn btn-primary btn-icon-text" (click)="openModal(addTarifModal)">
+            <i class="feather icon-plus btn-icon-prepend"></i>
+            Nouveau Tarif
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th>Trajet (Départ - Arrivée)</th>
+                <th>Compagnie</th>
+                <th class="text-end">Prix de Base (FCFA)</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let tarif of tarifs">
+                <td><strong>{{ tarif.trajet }}</strong></td>
+                <td>
+                  <span class="badge" [ngClass]="{'bg-primary': tarif.compagnie === 'UTB', 'bg-secondary': tarif.compagnie === 'Toutes'}">
+                    {{ tarif.compagnie }}
+                  </span>
+                </td>
+                <td class="text-end fw-bold">{{ tarif.prixBase | number:'1.0-0' }} FCFA</td>
+                <td class="text-end">
+                  <button class="btn btn-sm btn-outline-primary btn-icon me-2">
+                    <i class="feather icon-edit-2"></i>
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger btn-icon">
+                    <i class="feather icon-trash-2"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Template -->
+<ng-template #addTarifModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">Définir un Tarif de Base</h5>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+  <div class="modal-body">
+    <form>
+      <div class="mb-3">
+        <label class="form-label">Sélectionner un Trajet</label>
+        <select class="form-select" name="tarifTrajet" [(ngModel)]="newTarif.trajet">
+          <option value="" disabled selected>Choisir un trajet...</option>
+          <option value="Abidjan - Yamoussoukro">Abidjan - Yamoussoukro</option>
+          <option value="Abidjan - Bouaké">Abidjan - Bouaké</option>
+          <option value="Bouaké - Korhogo">Bouaké - Korhogo</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Compagnie (Optionnel, si tarif spécifique)</label>
+        <select class="form-select" name="tarifCompagnie" [(ngModel)]="newTarif.compagnie">
+          <option value="Toutes">Général (Toutes)</option>
+          <option value="UTB">UTB</option>
+          <option value="MT">MT</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Prix de Base (FCFA)</label>
+        <div class="input-group">
+          <input type="number" class="form-control" name="tarifPrix" [(ngModel)]="newTarif.prixBase" placeholder="Ex: 5000">
+          <span class="input-group-text">FCFA</span>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="modal.close('cancel')">Annuler</button>
+    <button type="button" class="btn btn-primary" (click)="modal.close('save')" [disabled]="!newTarif.trajet || newTarif.prixBase <= 0">Enregistrer le tarif</button>
+  </div>
+</ng-template>

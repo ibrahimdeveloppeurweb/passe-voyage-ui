@@ -1,0 +1,53 @@
+<div class="row">
+  <div class="col-md-12 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h5 class="mb-0 text-warning">Relances & Alertes</h5>
+            <p class="text-muted mt-1" style="font-size: 13px;">Gestion des mauvais payeurs et envoi de notifications.</p>
+          </div>
+          <button class="btn btn-outline-warning btn-icon-text">
+            <i class="feather icon-mail btn-icon-prepend"></i>
+            Relancer tout le monde
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th>Passager Débiteur</th>
+                <th>Téléphone</th>
+                <th class="text-end">Dette (FCFA)</th>
+                <th>Jours de Retard</th>
+                <th>Niveau d'Alerte</th>
+                <th>Dernière Relance</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let alerte of alertes">
+                <td><strong>{{ alerte.passager }}</strong></td>
+                <td>{{ alerte.telephone }}</td>
+                <td class="text-end fw-bold text-danger">{{ alerte.dette | number:'1.0-0' }}</td>
+                <td><span class="text-danger fw-bold">{{ alerte.joursRetard }} jours</span></td>
+                <td>
+                  <span class="badge" [ngClass]="{'bg-danger': alerte.niveau === 'Haut', 'bg-warning': alerte.niveau === 'Moyen'}">
+                    {{ alerte.niveau }}
+                  </span>
+                </td>
+                <td class="text-muted">{{ alerte.derniereRelance }}</td>
+                <td>
+                  <button class="btn btn-sm btn-primary" (click)="envoyerSMS(alerte)">
+                    <i class="feather icon-message-square me-1"></i> SMS
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

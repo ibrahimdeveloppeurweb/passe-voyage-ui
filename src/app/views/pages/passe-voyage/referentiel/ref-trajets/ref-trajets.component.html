@@ -1,0 +1,79 @@
+<div class="row">
+  <div class="col-md-12 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h5 class="mb-0">Liste des Trajets</h5>
+          <button class="btn btn-primary btn-icon-text" (click)="openModal(addTrajetModal)">
+            <i class="feather icon-plus btn-icon-prepend"></i>
+            Nouveau Trajet
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th>Ville de Départ</th>
+                <th>Ville d'Arrivée</th>
+                <th>Distance Estimée</th>
+                <th>Statut</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let trajet of trajets">
+                <td><strong>{{ trajet.depart }}</strong></td>
+                <td><strong>{{ trajet.arrivee }}</strong></td>
+                <td>{{ trajet.distance }}</td>
+                <td>
+                  <span class="badge" [ngClass]="{'bg-success': trajet.statut === 'Actif', 'bg-danger': trajet.statut === 'Inactif'}">
+                    {{ trajet.statut }}
+                  </span>
+                </td>
+                <td>
+                  <button class="btn btn-sm btn-outline-primary btn-icon me-2">
+                    <i class="feather icon-edit-2"></i>
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger btn-icon">
+                    <i class="feather icon-trash-2"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Template -->
+<ng-template #addTrajetModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">Créer un Trajet</h5>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+  <div class="modal-body">
+    <form>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Ville de Départ</label>
+          <input type="text" class="form-control" name="trajetDepart" [(ngModel)]="newTrajet.depart" placeholder="Ex: Abidjan">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Ville d'Arrivée</label>
+          <input type="text" class="form-control" name="trajetArrivee" [(ngModel)]="newTrajet.arrivee" placeholder="Ex: Bouaké">
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Distance (Optionnel)</label>
+        <input type="text" class="form-control" name="trajetDistance" [(ngModel)]="newTrajet.distance" placeholder="Ex: 350 km">
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="modal.close('cancel')">Annuler</button>
+    <button type="button" class="btn btn-primary" (click)="modal.close('save')" [disabled]="!newTrajet.depart.trim() || !newTrajet.arrivee.trim()">Enregistrer le trajet</button>
+  </div>
+</ng-template>

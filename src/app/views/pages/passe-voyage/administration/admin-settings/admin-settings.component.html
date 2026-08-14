@@ -1,0 +1,61 @@
+<div class="row">
+  <div class="col-md-8 mx-auto grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title mb-4">Configuration Globale Passe Voyage</h5>
+        
+        <form>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Frais de Service par Ticket (FCFA)</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="feather icon-dollar-sign"></i></span>
+                <input type="number" class="form-control" value="600">
+              </div>
+              <small class="text-muted">Répartition: 150 (Terrain), 150 (Risque), 300 (Marge)</small>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Délai Option Standard (Jours)</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="feather icon-clock"></i></span>
+                <input type="number" class="form-control" value="14">
+              </div>
+            </div>
+          </div>
+
+          <hr class="my-4">
+          
+          <h6 class="mb-3">Fonds de Roulement (Garantie UTB)</h6>
+          <div class="row mb-3">
+            <div class="col-md-12">
+              <label class="form-label">Réserve Financière Initiale (FCFA)</label>
+              <div class="input-group">
+                <span class="input-group-text bg-primary text-white"><i class="feather icon-shield"></i></span>
+                <input type="text" class="form-control" value="10 000 000" readonly>
+              </div>
+              <small class="text-info mt-1 d-block"><i class="feather icon-info me-1"></i> Ce fonds sert de ligne de trésorerie pré-achetée auprès d'UTB.</small>
+            </div>
+          </div>
+
+          <hr class="my-4">
+
+          <h6 class="mb-3">Services Tiers (API)</h6>
+          <div class="row mb-3">
+            <div class="col-md-12">
+              <label class="form-label">Clé API SMS de Notification</label>
+              <input type="password" class="form-control" value="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+            </div>
+          </div>
+
+          <div class="mt-4 pt-3 border-top text-end">
+            <button type="button" class="btn btn-primary btn-icon-text">
+              <i class="feather icon-save btn-icon-prepend"></i>
+              Sauvegarder les Paramètres
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>

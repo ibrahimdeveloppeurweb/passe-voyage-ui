@@ -1,0 +1,52 @@
+<div class="row">
+  <div class="col-md-12 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h5 class="mb-0 text-danger">Comptes Bloqués (Blacklist)</h5>
+            <p class="text-muted mt-1" style="font-size: 13px;">Passagers suspendus suite à des impayés de crédit voyage.</p>
+          </div>
+          <button class="btn btn-outline-danger btn-icon-text">
+            <i class="feather icon-filter btn-icon-prepend"></i>
+            Filtrer
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th>ID Passager</th>
+                <th>Nom Complet</th>
+                <th>Téléphone</th>
+                <th class="text-end">Dette (FCFA)</th>
+                <th>Date de Blocage</th>
+                <th>Motif</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let pass of blacklist">
+                <td><strong>{{ pass.id }}</strong></td>
+                <td>{{ pass.nom }}</td>
+                <td>{{ pass.telephone }}</td>
+                <td class="text-end fw-bold text-danger">{{ pass.dette | number:'1.0-0' }}</td>
+                <td>{{ pass.dateBlocage }}</td>
+                <td>{{ pass.motif }}</td>
+                <td>
+                  <button class="btn btn-sm btn-outline-success" (click)="debloquer(pass.id)" title="Lever la suspension">
+                    <i class="feather icon-unlock me-1"></i> Réactiver
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="blacklist.length === 0">
+                <td colspan="7" class="text-center text-muted py-4">Aucun passager bloqué actuellement.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

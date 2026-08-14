@@ -1,0 +1,96 @@
+<div class="row">
+  <div class="col-md-12 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h5 class="mb-0">Paiements Reçus</h5>
+            <p class="text-muted mt-1" style="font-size: 13px;">Historique des remboursements de crédits de voyage.</p>
+          </div>
+          <button class="btn btn-primary btn-icon-text" (click)="openModal(addPaiementModal)">
+            <i class="feather icon-plus btn-icon-prepend"></i>
+            Enregistrer un paiement
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th>Réf. Paiement</th>
+                <th>Passager</th>
+                <th>Date & Heure</th>
+                <th>Mode de Paiement</th>
+                <th class="text-end">Montant (FCFA)</th>
+                <th>Statut</th>
+                <th>Reçu</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let pmt of paiements">
+                <td><strong>{{ pmt.ref }}</strong></td>
+                <td>{{ pmt.passager }}</td>
+                <td>{{ pmt.date }}</td>
+                <td>
+                  <span class="badge bg-light text-dark border">
+                    <i class="feather icon-smartphone me-1" *ngIf="pmt.methode === 'Mobile Money'"></i>
+                    <i class="feather icon-briefcase me-1" *ngIf="pmt.methode === 'Espèces (Gare)'"></i>
+                    {{ pmt.methode }}
+                  </span>
+                </td>
+                <td class="text-end fw-bold text-success">+{{ pmt.montant | number:'1.0-0' }}</td>
+                <td>
+                  <span class="badge bg-success">{{ pmt.statut }}</span>
+                </td>
+                <td>
+                  <button class="btn btn-sm btn-outline-secondary btn-icon" title="Télécharger le reçu">
+                    <i class="feather icon-download"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Template -->
+<ng-template #addPaiementModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">Enregistrer un Remboursement Manuel</h5>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+  <div class="modal-body">
+    <form>
+      <div class="mb-3">
+        <label class="form-label">Sélectionner le Passager (Débiteur)</label>
+        <select class="form-select" name="pmtPassager" [(ngModel)]="newPaiement.passager">
+          <option value="" disabled selected>Choisir un passager...</option>
+          <option value="Bamba Ali (PS-1047)">Bamba Ali (PS-1047)</option>
+          <option value="Kouassi Marie (PS-1046)">Kouassi Marie (PS-1046)</option>
+          <option value="Kone Salif (PS-0892)">Kone Salif (PS-0892)</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Montant Remboursé (FCFA)</label>
+        <div class="input-group">
+          <input type="number" class="form-control" name="pmtMontant" [(ngModel)]="newPaiement.montant" placeholder="Ex: 2000">
+          <span class="input-group-text">FCFA</span>
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Mode d'encaissement</label>
+        <select class="form-select" name="pmtMethode" [(ngModel)]="newPaiement.methode">
+          <option value="Espèces (Gare)">Espèces (au Guichet)</option>
+          <option value="Virement Bancaire">Virement Bancaire</option>
+        </select>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="modal.close('cancel')">Annuler</button>
+    <button type="button" class="btn btn-primary" (click)="modal.close('save')" [disabled]="!newPaiement.passager || newPaiement.montant <= 0">Valider l'encaissement</button>
+  </div>
+</ng-template>

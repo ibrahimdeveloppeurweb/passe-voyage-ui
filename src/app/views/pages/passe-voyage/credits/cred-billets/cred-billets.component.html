@@ -1,0 +1,55 @@
+<div class="row">
+  <div class="col-md-12 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h5 class="mb-0">Billets Émis (Pass)</h5>
+            <p class="text-muted mt-1" style="font-size: 13px;">Registre des billets virtuels générés suite aux crédits accordés.</p>
+          </div>
+          <div class="input-group" style="width: 250px;">
+            <input type="text" class="form-control" placeholder="N° Billet...">
+            <button class="btn btn-outline-secondary btn-icon" type="button">
+              <i class="feather icon-search"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th>N° Billet</th>
+                <th>Passager</th>
+                <th>Compagnie</th>
+                <th>Trajet</th>
+                <th>Validité</th>
+                <th>Statut QR</th>
+                <th>Aperçu</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let billet of billets">
+                <td><strong>{{ billet.num }}</strong></td>
+                <td>{{ billet.passager }}</td>
+                <td><span class="badge bg-light text-dark border">{{ billet.compagnie }}</span></td>
+                <td>{{ billet.trajet }}</td>
+                <td>{{ billet.dateValidite }}</td>
+                <td>
+                  <span class="badge" [ngClass]="{'bg-success': billet.qrStatus === 'Valide', 'bg-secondary': billet.qrStatus === 'Consommé'}">
+                    {{ billet.qrStatus }}
+                  </span>
+                </td>
+                <td>
+                  <button class="btn btn-sm btn-outline-primary btn-icon" title="Voir QR Code">
+                    <i class="feather icon-maximize"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

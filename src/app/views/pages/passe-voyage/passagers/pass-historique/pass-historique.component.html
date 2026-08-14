@@ -1,0 +1,52 @@
+<div class="row">
+  <div class="col-md-12 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h5 class="mb-0">Historique des Voyages</h5>
+            <p class="text-muted mt-1" style="font-size: 13px;">Journal de bord des trajets réservés et effectués par les passagers.</p>
+          </div>
+          <div class="input-group" style="width: 300px;">
+            <input type="text" class="form-control" placeholder="Rechercher (ex: TK-9988...)">
+            <button class="btn btn-outline-secondary btn-icon" type="button">
+              <i class="feather icon-search"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th>N° Ticket</th>
+                <th>Passager</th>
+                <th>Compagnie</th>
+                <th>Trajet</th>
+                <th>Date & Heure</th>
+                <th class="text-end">Tarif (FCFA)</th>
+                <th>Statut</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let hist of historique">
+                <td><strong>{{ hist.ticketId }}</strong></td>
+                <td>{{ hist.passager }}</td>
+                <td><span class="badge bg-light text-dark border">{{ hist.compagnie }}</span></td>
+                <td>{{ hist.trajet }}</td>
+                <td>{{ hist.date }}</td>
+                <td class="text-end fw-bold">{{ hist.montant | number:'1.0-0' }}</td>
+                <td>
+                  <span class="badge" 
+                        [ngClass]="{'bg-success': hist.statut === 'Voyage Terminé', 'bg-warning': hist.statut === 'En cours', 'bg-info': hist.statut === 'Réservé'}">
+                    {{ hist.statut }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

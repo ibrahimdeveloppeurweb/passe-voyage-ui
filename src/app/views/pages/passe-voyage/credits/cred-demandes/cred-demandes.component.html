@@ -1,0 +1,85 @@
+<div class="row">
+  <div class="col-md-12 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h5 class="mb-0">Demandes de Crédit Voyage</h5>
+            <p class="text-muted mt-1" style="font-size: 13px;">Gérez les requêtes de crédit de vos passagers.</p>
+          </div>
+          <button class="btn btn-primary btn-icon-text">
+            <i class="feather icon-refresh-cw btn-icon-prepend"></i>
+            Actualiser
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th>Réf.</th>
+                <th>Passager</th>
+                <th>Détails du Voyage</th>
+                <th class="text-end">Montant & Billet</th>
+                <th class="text-center">Score Client</th>
+                <th>Soumission</th>
+                <th>Statut</th>
+                <th class="text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let req of demandes">
+                <td><strong>{{ req.id }}</strong></td>
+                <td>{{ req.passager }}</td>
+                <td>
+                  <div class="fw-bold">{{ req.trajet }} <span class="badge bg-secondary ms-1">{{ req.compagnie }}</span></div>
+                  <div class="mt-1 d-flex align-items-center flex-wrap">
+                    <span class="badge" [ngClass]="{'bg-primary': req.typeTrajet === 'Aller simple', 'bg-info': req.typeTrajet === 'Aller-retour'}" style="font-size: 10px; margin-right: 5px;">{{ req.typeTrajet }}</span>
+                  </div>
+                  <div class="text-muted small mt-1">
+                    <i class="feather icon-calendar" style="font-size: 11px;"></i> Aller : {{ req.dateVoyage }}
+                    <span *ngIf="req.dateRetour"><br><i class="feather icon-corner-up-left" style="font-size: 11px;"></i> Retour : {{ req.dateRetour }}</span>
+                  </div>
+                </td>
+                <td class="text-end">
+                  <div class="fw-bold text-primary">Total: {{ req.montant | number:'1.0-0' }} FCFA</div>
+                  <div class="text-muted small mt-1">
+                    P.U: {{ req.prixUnitaire | number:'1.0-0' }} FCFA
+                  </div>
+                  <div class="text-muted small mt-1">
+                    <i class="feather icon-users" style="font-size: 11px;"></i> {{ req.passagers }} Passager(s) • <i class="feather icon-copy" style="font-size: 11px;"></i> {{ req.billets }} Billet(s)
+                  </div>
+                  <div class="text-muted small mt-1">
+                    Frais de service: {{ req.frais }}F
+                  </div>
+                </td>
+                <td class="text-center">
+                  <span class="badge" [ngClass]="{'bg-success': req.score >= 80, 'bg-warning': req.score >= 50 && req.score < 80, 'bg-danger': req.score < 50}">
+                    {{ req.score }} / 100
+                  </span>
+                </td>
+                <td class="text-muted small">{{ req.date }}</td>
+                <td>
+                  <span class="badge" [ngClass]="{'bg-info': req.statut === 'En attente', 'bg-success': req.statut === 'Approuvé', 'bg-danger': req.statut === 'Rejeté'}">
+                    {{ req.statut }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  <div *ngIf="req.statut === 'En attente'" class="d-flex justify-content-center">
+                    <button class="btn btn-sm btn-success btn-icon me-1" (click)="approuver(req)" title="Approuver">
+                      <i class="feather icon-check"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger btn-icon" (click)="rejeter(req)" title="Rejeter">
+                      <i class="feather icon-x"></i>
+                    </button>
+                  </div>
+                  <span *ngIf="req.statut !== 'En attente'" class="text-muted small">Traitée</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

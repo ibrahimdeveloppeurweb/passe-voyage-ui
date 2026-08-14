@@ -1,0 +1,85 @@
+<div class="row">
+  <div class="col-md-12 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h5 class="mb-0">Facturation & Reversements</h5>
+          <button class="btn btn-primary btn-icon-text" (click)="openModal(addFactureModal)">
+            <i class="feather icon-plus btn-icon-prepend"></i>
+            Générer une Facture
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th>Référence</th>
+                <th>Compagnie</th>
+                <th>Période</th>
+                <th class="text-end">Montant (FCFA)</th>
+                <th>Statut</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let fac of factures">
+                <td><strong>{{ fac.reference }}</strong></td>
+                <td>{{ fac.compagnie }}</td>
+                <td>{{ fac.periode }}</td>
+                <td class="text-end fw-bold">{{ fac.montant | number:'1.0-0' }} FCFA</td>
+                <td>
+                  <span class="badge" [ngClass]="{'bg-success': fac.statut === 'Payé', 'bg-warning': fac.statut === 'En attente'}">
+                    {{ fac.statut }}
+                  </span>
+                </td>
+                <td>
+                  <button class="btn btn-sm btn-outline-secondary btn-icon me-2" title="Télécharger">
+                    <i class="feather icon-download"></i>
+                  </button>
+                  <button class="btn btn-sm btn-outline-primary btn-icon" title="Marquer comme payé" *ngIf="fac.statut === 'En attente'">
+                    <i class="feather icon-check"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Template -->
+<ng-template #addFactureModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">Générer une Facture Mensuelle</h5>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+  <div class="modal-body">
+    <form>
+      <div class="mb-3">
+        <label class="form-label">Compagnie Partenaire</label>
+        <select class="form-select" name="facCompagnie" [(ngModel)]="newFacture.compagnie">
+          <option value="UTB">UTB</option>
+          <option value="MT">MT</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Période de Facturation</label>
+        <input type="month" class="form-control" name="facPeriode" [(ngModel)]="newFacture.periode">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Montant à reverser (FCFA)</label>
+        <div class="input-group">
+          <input type="number" class="form-control" name="facMontant" [(ngModel)]="newFacture.montant" placeholder="Ex: 1500000">
+          <span class="input-group-text">FCFA</span>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="modal.close('cancel')">Annuler</button>
+    <button type="button" class="btn btn-primary" (click)="modal.close('save')" [disabled]="!newFacture.periode || newFacture.montant <= 0">Générer</button>
+  </div>
+</ng-template>
