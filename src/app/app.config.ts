@@ -3,8 +3,13 @@ import { provideRouter, withInMemoryScrolling } from '@angular/router';
 
 import { routes } from './app.routes';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { jwtInterceptor } from './core/interceptors/jwt.interceptor';
+import { handlerErrorInterceptor } from './core/interceptors/handler-error.interceptor';
+import { loaderInterceptor } from './core/interceptors/loader.interceptor';
 
 import { SweetAlert2Module } from '@sweetalert2/ngx-sweetalert2';
+import { NgxSpinnerModule } from 'ngx-spinner';
 import { provideHighlightOptions } from 'ngx-highlightjs';
 
 const highlightOptions = {
@@ -21,7 +26,15 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }), 
     provideRouter(routes, withInMemoryScrolling({ scrollPositionRestoration: 'top' })), 
     provideAnimationsAsync(),
-    importProvidersFrom([SweetAlert2Module.forRoot()]), // ngx-sweetalert2: https://github.com/sweetalert2/ngx-sweetalert2
+    provideHttpClient(withInterceptors([
+      jwtInterceptor,
+      handlerErrorInterceptor,
+      loaderInterceptor
+    ])),
+    importProvidersFrom([
+      SweetAlert2Module.forRoot(),
+      NgxSpinnerModule.forRoot({ type: 'ball-scale-multiple' })
+    ]),
     provideHighlightOptions(highlightOptions), // ngx-highlightjs: https://github.com/murhafsousli/ngx-highlightjs
   ],
 };

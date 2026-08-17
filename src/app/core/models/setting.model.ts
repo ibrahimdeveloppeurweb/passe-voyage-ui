@@ -1,0 +1,8 @@
+export interface Setting {
+    id?: number;
+    key: string;
+    value: string;
+    description?: string;
+    group?: 'GENERAL' | 'FINANCE' | 'SYSTEM';
+    updatedAt?: string;
+}

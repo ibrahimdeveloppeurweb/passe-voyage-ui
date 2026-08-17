@@ -1,34 +1,71 @@
-import { NgStyle } from '@angular/common';
+import { NgClass, NgIf, NgStyle, CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { AuthService } from '../../../../core/services/auth/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [
-    NgStyle,
-    RouterLink
+    CommonModule,
+    RouterLink,
+    ReactiveFormsModule
   ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })
 export class LoginComponent implements OnInit {
 
-  returnUrl: any;
+  loginForm!: FormGroup;
+  loading = false;
+  showPwd = false;
+  returnUrl = '/passe-voyage';
 
-  constructor(private router: Router, private route: ActivatedRoute) {}
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private route: ActivatedRoute,
+    private auth: AuthService
+  ) { }
 
   ngOnInit(): void {
-    // Get the return URL from the route parameters, or default to '/'
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
-  }
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/passe-voyage';
 
-  onLoggedin(e: Event) {
-    e.preventDefault();
-    localStorage.setItem('isLoggedin', 'true');
-    if (localStorage.getItem('isLoggedin') === 'true') {
+    // Redirect if already logged in
+    if (this.auth.isLoggedIn()) {
       this.router.navigate([this.returnUrl]);
     }
+
+    this.loginForm = this.fb.group({
+      username: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]],
+    });
   }
 
+  get f() { return this.loginForm.controls; }
+
+  togglePassword(): void {
+    this.showPwd = !this.showPwd;
+  }
+
+  onSubmit(): void {
+    if (this.loginForm.invalid || this.loading) {
+      this.loginForm.markAllAsTouched();
+      return;
+    }
+
+    this.loading = true;
+
+    this.auth.login(this.loginForm.value).subscribe({
+      next: () => {
+        this.loading = false;
+        this.router.navigate([this.returnUrl]);
+      },
+      error: () => {
+        this.loading = false;
+        // Errors are handled globally by HandlerErrorInterceptor
+      }
+    });
+  }
 }
