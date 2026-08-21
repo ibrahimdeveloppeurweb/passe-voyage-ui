@@ -119,7 +119,8 @@ export class PassHistoriqueComponent implements OnInit {
       result = result.filter(h => {
         const st = (h.statut || '').toUpperCase();
         if (stFilter === 'VALIDE') return st === 'VALIDE' || st === 'VALID' || st === 'VALIDATED';
-        if (stFilter === 'CONSOMME') return st === 'CONSOMMÉ' || st === 'CONSOMME' || st === 'USED' || st === 'VOYAGE TERMINÉ';
+        if (stFilter === 'SCANNE' || stFilter === 'CONSOMME') return st === 'SCANNÉ' || st === 'SCANNE' || st === 'CONSOMMÉ' || st === 'CONSOMME' || st === 'USED' || st === 'VOYAGE TERMINÉ';
+        if (stFilter === 'REFUSE') return st === 'REFUSÉ' || st === 'REFUSE' || st === 'REFUSED' || st === 'REJECTED';
         if (stFilter === 'EXPIRE') return st === 'EXPIRÉ' || st === 'EXPIRE';
         if (stFilter === 'ANNULE') return st === 'ANNULÉ' || st === 'ANNULE' || st === 'CANCELLED';
         return st.includes(stFilter);
@@ -158,18 +159,24 @@ export class PassHistoriqueComponent implements OnInit {
 
   getStatusBadgeInfo(statut: string): { label: string; bgClass: string } {
     const st = (statut || '').toUpperCase();
-    if (st === 'VALIDE' || st === 'VALID' || st === 'VALIDATED') {
-      return { label: 'Valide', bgClass: 'bg-success text-white' };
+    if (st === 'REFUSÉ' || st === 'REFUSE' || st === 'REFUSED' || st === 'REJECTED') {
+      return { label: 'Refusé', bgClass: 'bg-danger text-white' };
+    }
+    if (st === 'SCANNÉ' || st === 'SCANNE') {
+      return { label: 'Scanné', bgClass: 'bg-info text-white' };
     }
     if (st === 'CONSOMMÉ' || st === 'CONSOMME' || st === 'USED' || st === 'VOYAGE TERMINÉ') {
       return { label: 'Consommé', bgClass: 'bg-info text-white' };
     }
+    if (st === 'VALIDE' || st === 'VALID' || st === 'VALIDATED') {
+      return { label: 'Valide', bgClass: 'bg-success text-white' };
+    }
     if (st === 'EXPIRÉ' || st === 'EXPIRE') {
       return { label: 'Expiré', bgClass: 'bg-warning text-dark' };
     }
-    if (st === 'ANNULÉ' || st === 'ANNULE' || st === 'CANCELLED' || st === 'REJECTED') {
-      return { label: 'Annulé', bgClass: 'bg-danger text-white' };
+    if (st === 'ANNULÉ' || st === 'ANNULE' || st === 'CANCELLED') {
+      return { label: 'Annulé', bgClass: 'bg-secondary text-white' };
     }
-    return { label: statut || 'Valide', bgClass: 'bg-success text-white' };
+    return { label: statut || 'Valide', bgClass: 'bg-primary text-white' };
   }
 }

@@ -192,9 +192,9 @@
                 <td>
                   <span class="badge" [ngClass]="{
                     'bg-success': billet.qrStatus === 'Valide',
-                    'bg-info': billet.qrStatus === 'Scanné' || billet.qrStatus === 'Consommé',
-                    'bg-danger': billet.qrStatus === 'Refusé' || billet.status === 'REFUSED',
-                    'bg-secondary': billet.qrStatus === 'Annulé' || billet.qrStatus === 'Expiré'
+                    'bg-info': billet.qrStatus === 'Scanné' || billet.qrStatus === 'Consommé' || billet.qrStatus === 'Scanne' || billet.qrStatus === 'Consomme',
+                    'bg-danger': billet.qrStatus === 'Refusé' || billet.qrStatus === 'Refuse' || billet.status === 'REFUSED' || billet.status === 'REJECTED' || billet.status === 'REFUSE',
+                    'bg-secondary': billet.qrStatus === 'Annulé' || billet.qrStatus === 'Expiré' || billet.qrStatus === 'Annule' || billet.qrStatus === 'Expire'
                   }">
                     {{ billet.qrStatus || billet.status }}
                   </span>
