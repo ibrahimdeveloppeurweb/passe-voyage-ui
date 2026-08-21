@@ -1,82 +1,497 @@
-<div class="row">
-  <div class="col-md-12 grid-margin stretch-card">
-    <div class="card">
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <h5 class="mb-0">Base des Passagers</h5>
-          <button class="btn btn-primary btn-icon-text" (click)="openModal(addPassagerModal)">
-            <i class="feather icon-plus btn-icon-prepend"></i>
-            Nouveau Passager
-          </button>
-        </div>
+<div class="d-flex justify-content-between align-items-center flex-wrap grid-margin mb-3">
+  <div>
+    <h4 class="mb-1 fw-bold text-dark">Base des Passagers</h4>
+    <p class="text-secondary fs-13px mb-0">Gestion et suivi de l'ensemble des passagers inscrits via l'application mobile.</p>
+  </div>
+  <div class="d-flex align-items-center flex-wrap text-nowrap mt-2 mt-md-0">
+    <button type="button" class="btn btn-outline-primary btn-icon-text me-2" (click)="toggleAdvancedFilters()">
+      <i class="feather icon-filter me-1"></i>
+      {{ showAdvancedFilters ? 'Masquer Filtres' : 'Filtres Avancés' }}
+    </button>
+  </div>
+</div>
 
-        <div class="table-responsive">
-          <table class="table table-hover mb-0">
-            <thead>
-              <tr>
-                <th>ID Passager</th>
-                <th>Nom Complet</th>
-                <th>Téléphone</th>
-                <th>Date Inscription</th>
-                <th class="text-end">Solde Crédit (FCFA)</th>
-                <th>Statut</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let pass of passagers">
-                <td><strong>{{ pass.id }}</strong></td>
-                <td>{{ pass.nom }}</td>
-                <td>{{ pass.telephone }}</td>
-                <td>{{ pass.inscription }}</td>
-                <td class="text-end fw-bold" [ngClass]="{'text-danger': pass.solde < 0, 'text-success': pass.solde > 0}">
-                  {{ pass.solde | number:'1.0-0' }}
-                </td>
-                <td>
-                  <span class="badge" [ngClass]="{'bg-success': pass.statut === 'Actif', 'bg-danger': pass.statut === 'Bloqué'}">
-                    {{ pass.statut }}
-                  </span>
-                </td>
-                <td>
-                  <button class="btn btn-sm btn-outline-primary btn-icon me-2" title="Modifier">
-                    <i class="feather icon-edit-2"></i>
-                  </button>
-                  <button class="btn btn-sm btn-outline-secondary btn-icon" title="Voir détails">
-                    <i class="feather icon-eye"></i>
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+<!-- KPI Summary Cards -->
+<div class="row mb-4">
+  <div class="col-md col-6 mb-3 mb-xl-0">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #6c757d !important;">
+      <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-secondary fs-12px mb-1 fw-medium">Total Passagers</p>
+            <h4 class="fw-bold mb-0 text-dark">{{ totalCount }}</h4>
+          </div>
+          <i class="feather icon-users fs-2 text-secondary"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md col-6 mb-3 mb-xl-0">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #198754 !important;">
+      <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-secondary fs-12px mb-1 fw-medium">Passagers Vérifiés</p>
+            <h4 class="fw-bold mb-0 text-success">{{ verifiedCount }}</h4>
+          </div>
+          <i class="feather icon-user-check fs-2 text-success"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md col-6 mb-3 mb-xl-0">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #4680ff !important;">
+      <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-secondary fs-12px mb-1 fw-medium">Sans Document / Créé</p>
+            <h4 class="fw-bold mb-0 text-info">{{ noDocumentCount }}</h4>
+          </div>
+          <i class="feather icon-file-text fs-2 text-info"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md col-6 mb-3 mb-xl-0">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #ffc107 !important;">
+      <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-secondary fs-12px mb-1 fw-medium">En Attente Validation</p>
+            <h4 class="fw-bold mb-0 text-warning">{{ pendingCount }}</h4>
+          </div>
+          <i class="feather icon-clock fs-2 text-warning"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md col-6 mb-3 mb-xl-0">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #dc3545 !important;">
+      <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-secondary fs-12px mb-1 fw-medium">En Retard Paiement</p>
+            <h4 class="fw-bold mb-0 text-danger">{{ debtCount }}</h4>
+          </div>
+          <i class="feather icon-alert-triangle fs-2 text-danger"></i>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Modal Template -->
-<ng-template #addPassagerModal let-modal>
-  <div class="modal-header">
-    <h5 class="modal-title">Inscrire un Passager</h5>
+<!-- Filtres de Recherche -->
+<div class="row mb-3" *ngIf="showAdvancedFilters">
+  <div class="col-md-12">
+    <div class="card border shadow-sm">
+      <div class="card-body">
+        <h6 class="card-title mb-3 fw-bold text-uppercase fs-12px text-secondary">Filtres de recherche</h6>
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label fs-12px text-secondary mb-1">Recherche libre</label>
+            <input type="text" class="form-control form-control-sm" placeholder="Nom, ID, Tél, Email..." [(ngModel)]="advSearchTerm" (keyup.enter)="applyAdvancedFilters()">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fs-12px text-secondary mb-1">Statut du Dossier (KYC)</label>
+            <select class="form-select form-select-sm" [(ngModel)]="advStatusFilter">
+              <option value="">Tous</option>
+              <option value="VERIFIED">Vérifié (KYC Approuvé)</option>
+              <option value="PENDING">En attente de Validation</option>
+              <option value="CREATED">Compte Créé (Non identifié)</option>
+              <option value="REJECTED">Rejeté</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fs-12px text-secondary mb-1">Situation Financière</label>
+            <select class="form-select form-select-sm" [(ngModel)]="advFinancialStatusFilter">
+              <option value="">Toutes</option>
+              <option value="A_JOUR">À jour / Sans Dette (Solde = 0)</option>
+              <option value="IMPAYE">Impayé / Solde Crédit (> 0)</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fs-12px text-secondary mb-1">Solde Crédit FCFA (Restant dû)</label>
+            <div class="d-flex align-items-center">
+              <input type="number" class="form-control form-control-sm me-1" placeholder="Min" [(ngModel)]="advMinDebt">
+              <span class="text-secondary me-1">-</span>
+              <input type="number" class="form-control form-control-sm" placeholder="Max" [(ngModel)]="advMaxDebt">
+            </div>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fs-12px text-secondary mb-1">Résultats à afficher</label>
+            <select class="form-select form-select-sm" [(ngModel)]="advCountFilter">
+              <option [value]="5">5</option>
+              <option [value]="10">10</option>
+              <option [value]="20">20</option>
+              <option [value]="50">50</option>
+              <option [value]="1000">Tous</option>
+            </select>
+          </div>
+          <div class="col-md-3 d-flex align-items-end ms-auto">
+            <button class="btn btn-sm btn-primary me-2 w-50" (click)="applyAdvancedFilters()">
+              <i class="feather icon-filter me-1"></i> Filtrer
+            </button>
+            <button class="btn btn-sm btn-outline-secondary w-50" (click)="resetFilters()">
+              <i class="feather icon-refresh-cw me-1"></i> Réinitialiser
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-12 grid-margin stretch-card">
+    <div class="card border shadow-sm">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h6 class="card-title mb-0 fw-bold text-uppercase">LISTE DES PASSAGERS ({{ passagers.length }})</h6>
+        </div>
+
+        <div class="table-responsive" *ngIf="passagers.length > 0">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light">
+              <tr>
+                <th class="text-uppercase fs-12px fw-bold text-secondary">ID Passager</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary">Nom Complet</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary">Téléphone</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary">Date Inscription</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary text-end">Solde Crédit (XOF)</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary text-center">Statut</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary text-end me-2">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let pass of passagers">
+                <td><strong class="text-dark">{{ getPassengerId(pass) }}</strong></td>
+                <td class="fw-medium text-dark">{{ getFullName(pass) }}</td>
+                <td>{{ pass.phoneNumber || pass.telephone || 'N/A' }}</td>
+                <td>
+                  <div class="fw-medium text-dark">{{ getInscriptionDateParts(pass).date }}</div>
+                  <div class="text-muted small" *ngIf="getInscriptionDateParts(pass).time" style="font-size: 11px; margin-top: 1px;">
+                    <i class="feather icon-clock me-1" style="font-size: 10px;"></i>{{ getInscriptionDateParts(pass).time }}
+                  </div>
+                </td>
+                <td class="text-end fw-bold fs-14px" [ngClass]="{'text-primary': (pass.totalDebt ?? pass.solde ?? 0) > 0, 'text-dark': (pass.totalDebt ?? pass.solde ?? 0) == 0}">
+                  {{ (pass.totalDebt ?? pass.solde ?? 0) | number:'1.0-0' }}
+                </td>
+                <td class="text-center">
+                  <span class="badge px-3 py-2 rounded-2 fs-12px fw-medium" [ngClass]="getPassengerStatusInfo(pass).bgClass">
+                    {{ getPassengerStatusInfo(pass).label }}
+                  </span>
+                </td>
+                <td class="text-end">
+                  <div class="d-flex justify-content-end gap-1">
+                    <button class="btn btn-sm btn-icon" 
+                            [ngClass]="pass.isBlacklisted ? 'btn-outline-success' : 'btn-outline-danger'" 
+                            (click)="toggleBlacklist(pass)" 
+                            [title]="pass.isBlacklisted ? 'Débloquer / Réactiver ce passager' : 'Bloquer ce passager'">
+                      <i class="feather" [ngClass]="pass.isBlacklisted ? 'icon-unlock' : 'icon-lock'"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-info btn-icon" (click)="openContactsModal(contactsPassagerModal, pass)" title="Voir les contacts synchronisés">
+                      <i class="feather icon-book"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary btn-icon" (click)="openEditModal(editPassagerModal, pass)" title="Modifier les informations">
+                      <i class="feather icon-edit-2"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary btn-icon" (click)="openDetailModal(detailPassagerModal, pass)" title="Voir la fiche complète">
+                      <i class="feather icon-eye"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="text-center py-5 text-muted" *ngIf="passagers.length === 0 && !isLoading">
+          <i class="feather icon-users display-4 mb-2"></i>
+          <p class="mb-0">Aucun passager inscrit pour le moment.</p>
+        </div>
+
+        <div class="text-center py-5" *ngIf="isLoading">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Chargement...</span>
+          </div>
+          <p class="text-muted mt-2 mb-0">Chargement de la base des passagers...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Modification Passager -->
+<ng-template #editPassagerModal let-modal>
+  <div class="modal-header border-bottom">
+    <h5 class="modal-title text-dark fw-bold">Modifier le Passager</h5>
     <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
   </div>
-  <div class="modal-body">
-    <form>
-      <div class="mb-3">
-        <label class="form-label">Nom Complet</label>
-        <input type="text" class="form-control" name="passNom" [(ngModel)]="newPassager.nom" placeholder="Ex: Diallo Amadou">
+  <div class="modal-body py-4">
+    <form (ngSubmit)="updatePassager(modal)">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-bold">Prénom <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" name="firstname" [(ngModel)]="selectedPassager.firstname">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-bold">Nom <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" name="lastname" [(ngModel)]="selectedPassager.lastname">
+        </div>
       </div>
-      <div class="mb-3">
-        <label class="form-label">Numéro de Téléphone</label>
-        <input type="tel" class="form-control" name="passTel" [(ngModel)]="newPassager.telephone" placeholder="Ex: 07 88 99 00 11">
+
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-bold">Numéro de Téléphone <span class="text-danger">*</span></label>
+          <input type="tel" class="form-control" name="phoneNumber" [(ngModel)]="selectedPassager.phoneNumber">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-bold">Adresse Email</label>
+          <input type="email" class="form-control" name="email" [(ngModel)]="selectedPassager.email" placeholder="exemple@mail.com">
+        </div>
       </div>
-      <p class="text-muted small mt-2">
-        <i class="feather icon-info"></i> Le mot de passe initial sera envoyé par SMS au passager.
-      </p>
+
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-bold">Plafond Crédit Max (XOF)</label>
+          <input type="number" class="form-control" name="maxCreditLimit" [(ngModel)]="selectedPassager.maxCreditLimit">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-bold">Statut du compte</label>
+          <select class="form-select" name="isBlacklisted" [(ngModel)]="selectedPassager.isBlacklisted">
+            <option [ngValue]="false">Actif (Autorisé)</option>
+            <option [ngValue]="true">Bloqué (Blacklisté)</option>
+          </select>
+        </div>
+      </div>
     </form>
   </div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="modal.close('cancel')">Annuler</button>
-    <button type="button" class="btn btn-primary" (click)="modal.close('save')" [disabled]="!newPassager.nom.trim() || !newPassager.telephone.trim()">Enregistrer</button>
+  <div class="modal-footer border-top">
+    <button type="button" class="btn btn-secondary px-4" (click)="modal.dismiss('cancel')">Annuler</button>
+    <button type="button" class="btn btn-primary px-4 shadow-sm" (click)="updatePassager(modal)" [disabled]="isSaving">
+      <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" *ngIf="isSaving"></span>
+      {{ isSaving ? 'Enregistrement...' : 'Enregistrer' }}
+    </button>
+  </div>
+</ng-template>
+
+<!-- Modal Fiche / Détails Passager -->
+<ng-template #detailPassagerModal let-modal>
+  <div class="modal-header border-bottom">
+    <h5 class="modal-title text-dark fw-bold">Fiche Passager — {{ getFullName(selectedPassager) }}</h5>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+  <div class="modal-body py-4" *ngIf="selectedPassager">
+    <div class="row mb-4">
+      <div class="col-md-4 text-center border-end">
+        <div class="avatar-wrapper mb-3">
+          <img [src]="getImageUrl(selectedPassager.selfieUrl, 'avatar')" 
+               (error)="onImgError($event, 'avatar')"
+               alt="Photo Passager" 
+               class="rounded-circle img-thumbnail shadow-sm" 
+               style="width: 110px; height: 110px; object-fit: cover;">
+        </div>
+        <h6 class="fw-bold mb-1 text-dark">{{ getFullName(selectedPassager) }}</h6>
+        <p class="text-muted small mb-2">{{ selectedPassager.phoneNumber || selectedPassager.telephone }}</p>
+        <span class="badge px-3 py-1 rounded-2" [ngClass]="{
+          'bg-success': !selectedPassager.isBlacklisted && selectedPassager.statut !== 'Bloqué',
+          'bg-danger': selectedPassager.isBlacklisted || selectedPassager.statut === 'Bloqué'
+        }">
+          {{ (selectedPassager.isBlacklisted || selectedPassager.statut === 'Bloqué') ? 'Bloqué' : 'Compte Actif' }}
+        </span>
+      </div>
+
+      <div class="col-md-8">
+        <h6 class="fw-bold text-secondary text-uppercase fs-12px mb-3">Informations Générales</h6>
+        <div class="row g-3">
+          <div class="col-6">
+            <span class="text-muted d-block small">Email :</span>
+            <strong class="text-dark">{{ selectedPassager.email || 'Non renseigné' }}</strong>
+          </div>
+          <div class="col-6">
+            <span class="text-muted d-block small">Genre :</span>
+            <strong class="text-dark">{{ selectedPassager.gender || 'Non renseigné' }}</strong>
+          </div>
+          <div class="col-6">
+            <span class="text-muted d-block small">Adresse de Résidence :</span>
+            <strong class="text-dark">{{ selectedPassager.residenceAddress || 'Non renseignée' }}</strong>
+          </div>
+          <div class="col-6">
+            <span class="text-muted d-block small">Date d'inscription :</span>
+            <strong class="text-dark">{{ getInscriptionDate(selectedPassager) }}</strong>
+          </div>
+        </div>
+
+        <hr class="my-3">
+
+        <h6 class="fw-bold text-secondary text-uppercase fs-12px mb-3">Solde & Crédit Voyage</h6>
+        <div class="row g-3">
+          <div class="col-6">
+            <span class="text-muted d-block small">Solde Disponible :</span>
+            <strong class="fs-15px text-success">{{ (selectedPassager.availableCredit ?? selectedPassager.solde ?? 0) | number:'1.0-0' }} XOF</strong>
+          </div>
+          <div class="col-6">
+            <span class="text-muted d-block small">Plafond Autorisé :</span>
+            <strong class="text-dark">{{ (selectedPassager.maxCreditLimit ?? 200000) | number:'1.0-0' }} XOF</strong>
+          </div>
+          <div class="col-6">
+            <span class="text-muted d-block small">Score de Crédit :</span>
+            <strong class="text-primary">{{ selectedPassager.creditScore ?? 100 }} / 100</strong>
+          </div>
+          <div class="col-6">
+            <span class="text-muted d-block small">Statut Pièces KYC :</span>
+            <span class="badge rounded-1" [ngClass]="{
+              'bg-success': selectedPassager.identityStatus === 'VERIFIED',
+              'bg-warning text-dark': selectedPassager.identityStatus === 'PENDING',
+              'bg-danger': selectedPassager.identityStatus === 'REJECTED',
+              'bg-secondary': !selectedPassager.identityStatus || selectedPassager.identityStatus === 'NOT_SUBMITTED'
+            }">
+              {{ getKycStatusLabel(selectedPassager.identityStatus) }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pièces d'identité & Selfie KYC (Always Visible) -->
+    <div class="border-top pt-3">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-bold text-dark mb-0">Documents d'Identification & Selfie (KYC)</h6>
+        <span class="badge" [ngClass]="{
+          'bg-success': selectedPassager.identityStatus === 'VERIFIED',
+          'bg-warning text-dark': selectedPassager.identityStatus === 'PENDING',
+          'bg-danger': selectedPassager.identityStatus === 'REJECTED',
+          'bg-secondary': !selectedPassager.identityStatus || selectedPassager.identityStatus === 'NOT_SUBMITTED'
+        }">
+          {{ getKycStatusLabel(selectedPassager.identityStatus) }}
+        </span>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <p class="text-muted small mb-1"><strong>N° Pièce :</strong> {{ selectedPassager.identityCardNumber || 'Non renseigné' }}</p>
+        </div>
+        <div class="col-md-6">
+          <p class="text-muted small mb-1"><strong>Type de Document :</strong> {{ selectedPassager.identityType || 'CNI / Passeport' }}</p>
+        </div>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-md-4">
+          <span class="text-muted small d-block mb-1 fw-bold">Photo Selfie :</span>
+          <div class="border rounded p-2 text-center bg-light" style="min-height: 140px; display: flex; align-items: center; justify-content: center;">
+            <img [src]="getImageUrl(selectedPassager.selfieUrl, 'avatar')" 
+                 (error)="onImgError($event, 'avatar')"
+                 alt="Photo Selfie" 
+                 class="img-fluid rounded shadow-sm" 
+                 style="max-height: 160px; object-fit: contain;">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <span class="text-muted small d-block mb-1 fw-bold">Recto de la pièce :</span>
+          <div class="border rounded p-2 text-center bg-light" style="min-height: 140px; display: flex; align-items: center; justify-content: center;">
+            <img [src]="getImageUrl(selectedPassager.identityRectoUrl, 'doc')" 
+                 (error)="onImgError($event, 'doc')"
+                 alt="Recto Pièce" 
+                 class="img-fluid rounded shadow-sm" 
+                 style="max-height: 160px; object-fit: contain;">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <span class="text-muted small d-block mb-1 fw-bold">Verso de la pièce :</span>
+          <div class="border rounded p-2 text-center bg-light" style="min-height: 140px; display: flex; align-items: center; justify-content: center;">
+            <img [src]="getImageUrl(selectedPassager.identityVersoUrl, 'doc')" 
+                 (error)="onImgError($event, 'doc')"
+                 alt="Verso Pièce" 
+                 class="img-fluid rounded shadow-sm" 
+                 style="max-height: 160px; object-fit: contain;">
+          </div>
+        </div>
+      </div>
+
+      <!-- Message si aucun document n'a été soumis -->
+      <div class="alert alert-secondary text-center mt-4 mb-0 py-2" *ngIf="!selectedPassager.identityStatus || selectedPassager.identityStatus === 'NOT_SUBMITTED'">
+        <i class="feather icon-info me-1"></i> Aucune pièce d'identité n'a encore été soumise par ce passager via l'application mobile.
+      </div>
+
+      <!-- Boutons d'action pour les pièces soumises -->
+      <div class="d-flex gap-2 mt-4 pt-2 border-top" *ngIf="selectedPassager.identityStatus && selectedPassager.identityStatus !== 'NOT_SUBMITTED'">
+        <button class="btn btn-success flex-fill" 
+                (click)="validateKyc(selectedPassager, 'VERIFIED')" 
+                [disabled]="selectedPassager.identityStatus === 'VERIFIED'">
+          <i class="feather icon-check me-1"></i> Approuver / Valider les pièces KYC
+        </button>
+        <button class="btn btn-outline-danger flex-fill" 
+                (click)="validateKyc(selectedPassager, 'REJECTED')" 
+                [disabled]="selectedPassager.identityStatus === 'VERIFIED' || selectedPassager.identityStatus === 'REJECTED'">
+          <i class="feather icon-x me-1"></i> Rejeter le dossier KYC
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer border-top">
+    <button type="button" class="btn btn-secondary px-4" (click)="modal.close('close')">Fermer</button>
+  </div>
+</ng-template>
+
+<!-- Modal Contacts Passager -->
+<ng-template #contactsPassagerModal let-modal>
+  <div class="modal-header border-bottom bg-light py-3">
+    <div class="d-flex align-items-center gap-2">
+      <div class="bg-info bg-opacity-10 text-info p-2 rounded-circle">
+        <i class="feather icon-book fs-18px"></i>
+      </div>
+      <div>
+        <h5 class="modal-title text-dark fw-bold mb-0">Contacts Synchronisés</h5>
+        <small class="text-muted">{{ getFullName(selectedPassager) }} ({{ selectedPassager.phoneNumber || selectedPassager.telephone }})</small>
+      </div>
+    </div>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+  <div class="modal-body py-4" *ngIf="selectedPassager">
+    <div *ngIf="selectedPassager.contacts && selectedPassager.contacts.length > 0">
+      <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center justify-content-between shadow-sm">
+        <span class="small fw-medium"><i class="feather icon-info me-1"></i> Carnet de répertoires importé du smartphone :</span>
+        <span class="badge bg-info text-white rounded-pill px-3 py-1 fs-12px">{{ selectedPassager.contacts.length }} contact(s)</span>
+      </div>
+
+      <div class="table-responsive border rounded" style="max-height: 360px; overflow-y: auto;">
+        <table class="table table-sm table-hover align-middle mb-0">
+          <thead class="bg-light sticky-top">
+            <tr>
+              <th class="text-muted small fw-bold text-center" style="width: 45px;">#</th>
+              <th class="text-muted small fw-bold">Nom du Contact</th>
+              <th class="text-muted small fw-bold">Numéro de Téléphone</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let contact of selectedPassager.contacts; let i = index">
+              <td class="text-muted small text-center">{{ i + 1 }}</td>
+              <td class="fw-semibold text-dark">
+                <i class="feather icon-user me-2 text-secondary"></i>
+                {{ contact.contactName || 'Sans Nom' }}
+              </td>
+              <td>
+                <span class="badge bg-light text-dark border px-2 py-1 fs-12px">
+                  <i class="feather icon-phone me-1 text-primary"></i>
+                  {{ contact.phoneNumber }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div *ngIf="!selectedPassager.contacts || selectedPassager.contacts.length === 0" class="text-center py-5 text-muted">
+      <div class="avatar-lg bg-light rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 65px; height: 65px;">
+        <i class="feather icon-phone-off text-secondary fs-24px"></i>
+      </div>
+      <h6 class="fw-bold text-dark">Aucun contact synchronisé</h6>
+      <p class="small text-muted mb-0">Ce passager n'a pas encore partagé son répertoire téléphonique sur l'application mobile.</p>
+    </div>
+  </div>
+  <div class="modal-footer border-top bg-light">
+    <button type="button" class="btn btn-secondary px-4" (click)="modal.close('close')">Fermer</button>
   </div>
 </ng-template>

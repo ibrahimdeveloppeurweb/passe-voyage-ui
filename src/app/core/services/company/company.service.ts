@@ -2,86 +2,102 @@ import { Injectable } from '@angular/core';
 import { catchError, map, Observable, throwError } from 'rxjs';
 import { ApiService } from '../../../utils/api.service';
 import { NoInternetHelper } from '../../../utils/no-internet-helper';
-import { Company } from '../../../core/models/company.model';
+
+export interface CompanyItem {
+  id?: number;
+  uuid?: string;
+  nom?: string;
+  name?: string;
+  contact?: string;
+  contactEmail?: string;
+  email?: string;
+  telephone?: string;
+  contactPhone?: string;
+  address?: string;
+  statut?: string;
+  status?: string;
+  logo?: string;
+  isActive?: boolean;
+  createdAt?: string;
+}
 
 @Injectable({
-    providedIn: 'root'
+  providedIn: 'root'
 })
 export class CompanyService {
-    private url = 'companies';
-    public company: Company | null = null;
-    public edit: boolean = false;
+  private url = 'private/company';
 
-    constructor(private api: ApiService) { }
+  constructor(private api: ApiService) { }
 
-    setCompany(company: Company) {
-        this.company = company;
+  getList(): Observable<{ data: CompanyItem[] }> {
+    if (!navigator.onLine) {
+      NoInternetHelper.internet();
+      return new Observable(obs => { obs.next(); obs.complete(); });
     }
 
-    getCompany(): Company | null {
-        return this.company;
+    return this.api._get(this.url).pipe(
+      map((response: any) => response),
+      catchError((error: any) => throwError(() => error))
+    );
+  }
+
+  getSingle(uuid: string): Observable<{ data: CompanyItem }> {
+    if (!navigator.onLine) {
+      NoInternetHelper.internet();
+      return new Observable(obs => { obs.next(); obs.complete(); });
     }
 
-    add(data: Company): Observable<any> {
-        if (!navigator.onLine) {
-            NoInternetHelper.internet();
-            return new Observable(obs => { obs.next(); obs.complete(); });
-        }
+    return this.api._get(`${this.url}/show`, { uuid: uuid }).pipe(
+      map((response: any) => response),
+      catchError((error: any) => throwError(() => error))
+    );
+  }
 
-        if (data.id) {
-            return this.update(data);
-        } else {
-            return this.create(data);
-        }
+  create(data: CompanyItem): Observable<any> {
+    if (!navigator.onLine) {
+      NoInternetHelper.internet();
+      return new Observable(obs => { obs.next(); obs.complete(); });
     }
 
-    create(data: Company): Observable<any> {
-        return this.api._post(`${this.url}/new`, data).pipe(
-            map((response: any) => response),
-            catchError((error: any) => throwError(() => error))
-        );
+    return this.api._post(`${this.url}/new`, data).pipe(
+      map((response: any) => response),
+      catchError((error: any) => throwError(() => error))
+    );
+  }
+
+  update(uuid: string, data: CompanyItem): Observable<any> {
+    if (!navigator.onLine) {
+      NoInternetHelper.internet();
+      return new Observable(obs => { obs.next(); obs.complete(); });
     }
 
-    update(data: Company): Observable<any> {
-        return this.api._post(`${this.url}/${data.id}/edit`, data).pipe(
-            map((response: any) => response),
-            catchError((error: any) => throwError(() => error))
-        );
+    return this.api._post(`${this.url}/${uuid}/edit`, data).pipe(
+      map((response: any) => response),
+      catchError((error: any) => throwError(() => error))
+    );
+  }
+
+  delete(uuid: string): Observable<any> {
+    if (!navigator.onLine) {
+      NoInternetHelper.internet();
+      return new Observable(obs => { obs.next(); obs.complete(); });
     }
 
-    getList(): Observable<Company[]> {
-        if (!navigator.onLine) {
-            NoInternetHelper.internet();
-            return new Observable(obs => { obs.next(); obs.complete(); });
-        }
+    return this.api._delete(`${this.url}/${uuid}/delete`).pipe(
+      map((response: any) => response),
+      catchError((error: any) => throwError(() => error))
+    );
+  }
 
-        return this.api._get(`${this.url}/`).pipe(
-            map((response: any) => response),
-            catchError((error: any) => throwError(() => error))
-        );
+  toggle(uuid: string): Observable<any> {
+    if (!navigator.onLine) {
+      NoInternetHelper.internet();
+      return new Observable(obs => { obs.next(); obs.complete(); });
     }
 
-    getSingle(id: string): Observable<Company> {
-        if (!navigator.onLine) {
-            NoInternetHelper.internet();
-            return new Observable(obs => { obs.next(); obs.complete(); });
-        }
-
-        return this.api._get(`${this.url}/${id}/show`).pipe(
-            map((response: any) => response),
-            catchError((error: any) => throwError(() => error))
-        );
-    }
-
-    getDelete(id: string): Observable<any> {
-        if (!navigator.onLine) {
-            NoInternetHelper.internet();
-            return new Observable(obs => { obs.next(); obs.complete(); });
-        }
-
-        return this.api._delete(`${this.url}/${id}/delete`).pipe(
-            map((response: any) => response),
-            catchError((error: any) => throwError(() => error))
-        );
-    }
+    return this.api._patch(`${this.url}/${uuid}/toggle`, {}).pipe(
+      map((response: any) => response),
+      catchError((error: any) => throwError(() => error))
+    );
+  }
 }

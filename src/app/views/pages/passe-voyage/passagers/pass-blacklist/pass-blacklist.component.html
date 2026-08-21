@@ -1,50 +1,85 @@
+<div class="d-flex justify-content-between align-items-center flex-wrap grid-margin mb-3">
+  <div>
+    <h4 class="mb-1 fw-bold text-dark">Comptes Bloqués (Blacklist)</h4>
+    <p class="text-secondary fs-13px mb-0">Passagers suspendus suite à des impayés de crédit voyage ou décision administrative.</p>
+  </div>
+  <div class="d-flex align-items-center flex-wrap text-nowrap mt-2 mt-md-0">
+    <button type="button" class="btn btn-outline-primary btn-icon-text me-2" (click)="toggleAdvancedFilters()">
+      <i class="feather icon-filter me-1"></i>
+      {{ showAdvancedFilters ? 'Masquer Filtres' : 'Filtrer' }}
+    </button>
+  </div>
+</div>
+
+<!-- Filtre de recherche -->
+<div class="row mb-3" *ngIf="showAdvancedFilters">
+  <div class="col-md-12">
+    <div class="card border shadow-sm">
+      <div class="card-body">
+        <h6 class="card-title mb-3 fw-bold text-uppercase fs-12px text-secondary">Filtre de recherche (Blacklist)</h6>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <input type="text" class="form-control form-control-sm" placeholder="Rechercher par nom, téléphone, ID..." [(ngModel)]="advSearchTerm" (input)="applyFilters()" (keyup.enter)="loadBlacklist()">
+          </div>
+          <div class="col-md-6 d-flex">
+            <button class="btn btn-sm btn-primary me-2 w-50" (click)="loadBlacklist()">
+              <i class="feather icon-filter me-1"></i> Filtrer
+            </button>
+            <button class="btn btn-sm btn-outline-secondary w-50" (click)="resetFilters()">
+              <i class="feather icon-refresh-cw me-1"></i> Réinitialiser
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="row">
   <div class="col-md-12 grid-margin stretch-card">
-    <div class="card">
+    <div class="card border shadow-sm">
       <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <div>
-            <h5 class="mb-0 text-danger">Comptes Bloqués (Blacklist)</h5>
-            <p class="text-muted mt-1" style="font-size: 13px;">Passagers suspendus suite à des impayés de crédit voyage.</p>
-          </div>
-          <button class="btn btn-outline-danger btn-icon-text">
-            <i class="feather icon-filter btn-icon-prepend"></i>
-            Filtrer
-          </button>
-        </div>
-
-        <div class="table-responsive">
-          <table class="table table-hover mb-0">
-            <thead>
+        <div class="table-responsive" *ngIf="blacklist.length > 0">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light">
               <tr>
-                <th>ID Passager</th>
-                <th>Nom Complet</th>
-                <th>Téléphone</th>
-                <th class="text-end">Dette (FCFA)</th>
-                <th>Date de Blocage</th>
-                <th>Motif</th>
-                <th>Action</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary">ID Passager</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary">Nom Complet</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary">Téléphone</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary text-end">Dette (XOF)</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary">Date de Blocage</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary">Motif</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary text-center">Action</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let pass of blacklist">
-                <td><strong>{{ pass.id }}</strong></td>
-                <td>{{ pass.nom }}</td>
-                <td>{{ pass.telephone }}</td>
-                <td class="text-end fw-bold text-danger">{{ pass.dette | number:'1.0-0' }}</td>
-                <td>{{ pass.dateBlocage }}</td>
-                <td>{{ pass.motif }}</td>
-                <td>
-                  <button class="btn btn-sm btn-outline-success" (click)="debloquer(pass.id)" title="Lever la suspension">
+                <td><strong class="text-dark">{{ getPassengerId(pass) }}</strong></td>
+                <td class="fw-medium text-dark">{{ getFullName(pass) }}</td>
+                <td>{{ pass.phoneNumber || pass.telephone }}</td>
+                <td class="text-end fw-bold text-danger">{{ (pass.totalDebt || pass.solde || 0) | number:'1.0-0' }}</td>
+                <td>{{ getInscriptionDate(pass) }}</td>
+                <td><span class="badge bg-danger bg-opacity-10 text-danger border border-danger">Suspension administrative / Impayés</span></td>
+                <td class="text-center">
+                  <button class="btn btn-sm btn-outline-success" (click)="debloquer(pass)" title="Lever la suspension">
                     <i class="feather icon-unlock me-1"></i> Réactiver
                   </button>
                 </td>
               </tr>
-              <tr *ngIf="blacklist.length === 0">
-                <td colspan="7" class="text-center text-muted py-4">Aucun passager bloqué actuellement.</td>
-              </tr>
             </tbody>
           </table>
+        </div>
+
+        <div class="text-center py-5 text-muted" *ngIf="blacklist.length === 0 && !isLoading">
+          <i class="feather icon-user-check display-4 mb-2 text-success"></i>
+          <p class="mb-0">Aucun passager bloqué dans la blacklist actuellement.</p>
+        </div>
+
+        <div class="text-center py-5" *ngIf="isLoading">
+          <div class="spinner-border text-danger" role="status">
+            <span class="visually-hidden">Chargement...</span>
+          </div>
+          <p class="text-muted mt-2 mb-0">Chargement de la liste noire...</p>
         </div>
       </div>
     </div>

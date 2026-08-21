@@ -1,43 +1,56 @@
 <div class="row">
   <div class="col-md-12 grid-margin stretch-card">
-    <div class="card">
+    <div class="card border shadow-sm">
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-4">
-          <h5 class="mb-0">Compagnies Partenaires</h5>
-          <button class="btn btn-primary btn-icon-text" (click)="openModal(addCompagnieModal)">
-            <i class="feather icon-plus btn-icon-prepend"></i>
+          <h5 class="mb-0 text-dark fw-bold">Compagnies Partenaires</h5>
+          <button class="btn btn-primary btn-icon-text px-3 py-2 shadow-sm" (click)="openNewModal(addCompagnieModal)">
+            <i class="feather icon-plus btn-icon-prepend me-1"></i>
             Nouvelle Compagnie
           </button>
         </div>
 
         <div class="table-responsive">
-          <table class="table table-hover mb-0">
-            <thead>
+          <table class="table align-middle table-hover mb-0">
+            <thead class="bg-light">
               <tr>
-                <th>Nom de la Compagnie</th>
-                <th>Email de Contact</th>
-                <th>Téléphone</th>
-                <th>Statut</th>
-                <th>Actions</th>
+                <th class="border-top-0 text-uppercase fs-11px fw-bold text-secondary py-3">Nom de la Compagnie</th>
+                <th class="border-top-0 text-uppercase fs-11px fw-bold text-secondary py-3">Email de Contact</th>
+                <th class="border-top-0 text-uppercase fs-11px fw-bold text-secondary py-3">Téléphone</th>
+                <th class="border-top-0 text-uppercase fs-11px fw-bold text-secondary py-3">Statut</th>
+                <th class="border-top-0 text-uppercase fs-11px fw-bold text-secondary text-center py-3">Actions</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let comp of compagnies">
-                <td><strong>{{ comp.nom }}</strong></td>
-                <td>{{ comp.contact }}</td>
-                <td>{{ comp.telephone }}</td>
                 <td>
-                  <span class="badge" [ngClass]="{'bg-primary': comp.statut === 'Partenaire Principal', 'bg-info': comp.statut === 'Partenaire Actif'}">
-                    {{ comp.statut }}
+                  <strong class="text-dark fw-bold fs-14px">{{ getCompanyName(comp) }}</strong>
+                </td>
+                <td class="text-secondary fs-13px">{{ getCompanyEmail(comp) }}</td>
+                <td class="text-secondary fs-13px">{{ getCompanyPhone(comp) }}</td>
+                <td>
+                  <span class="badge px-3 py-2 rounded-2 fs-12px fw-medium" [ngClass]="{
+                    'bg-primary text-white': getCompanyStatus(comp) === 'Partenaire Principal',
+                    'bg-info text-white': getCompanyStatus(comp) === 'Partenaire Actif',
+                    'bg-secondary text-white': getCompanyStatus(comp) === 'Inactif'
+                  }">
+                    {{ getCompanyStatus(comp) }}
                   </span>
                 </td>
-                <td>
-                  <button class="btn btn-sm btn-outline-primary btn-icon me-2">
-                    <i class="feather icon-edit-2"></i>
-                  </button>
-                  <button class="btn btn-sm btn-outline-danger btn-icon">
-                    <i class="feather icon-trash-2"></i>
-                  </button>
+                <td class="text-center">
+                  <div class="d-flex justify-content-center align-items-center gap-2">
+                    <button class="btn btn-sm btn-icon btn-outline-primary" (click)="openEditModal(addCompagnieModal, comp)" title="Modifier la compagnie">
+                      <i class="feather icon-edit-2"></i>
+                    </button>
+                    <button class="btn btn-sm btn-icon btn-outline-danger" (click)="deleteCompany(comp)" title="Supprimer la compagnie">
+                      <i class="feather icon-trash-2"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="compagnies.length === 0 && !isLoading">
+                <td colspan="5" class="text-center py-4 text-muted">
+                  Aucune compagnie partenaire enregistrée.
                 </td>
               </tr>
             </tbody>
@@ -48,30 +61,43 @@
   </div>
 </div>
 
-<!-- Modal Template -->
+<!-- Modal Ajouter / Modifier Compagnie -->
 <ng-template #addCompagnieModal let-modal>
-  <div class="modal-header">
-    <h5 class="modal-title">Ajouter une Compagnie</h5>
-    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+  <div class="modal-header border-bottom">
+    <h5 class="modal-title text-dark fw-bold">
+      {{ isEditMode ? 'Modifier la Compagnie' : 'Ajouter une Compagnie' }}
+    </h5>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
   </div>
-  <div class="modal-body">
-    <form>
+  <div class="modal-body py-4">
+    <form (ngSubmit)="submitCompanyForm(modal)">
       <div class="mb-3">
-        <label class="form-label">Nom de la Compagnie</label>
-        <input type="text" class="form-control" name="compNom" [(ngModel)]="newCompagnie.nom" placeholder="Ex: UTB">
+        <label class="form-label fw-bold">Nom de la Compagnie <span class="text-danger">*</span></label>
+        <input type="text" class="form-control" name="compNom" [(ngModel)]="companyForm.name" placeholder="Ex: UTB">
       </div>
       <div class="mb-3">
-        <label class="form-label">Email de Contact</label>
-        <input type="email" class="form-control" name="compEmail" [(ngModel)]="newCompagnie.contact" placeholder="contact@utb.ci">
+        <label class="form-label fw-bold">Email de Contact</label>
+        <input type="email" class="form-control" name="compEmail" [(ngModel)]="companyForm.contactEmail" placeholder="contact@utb.ci">
       </div>
       <div class="mb-3">
-        <label class="form-label">Téléphone</label>
-        <input type="text" class="form-control" name="compTel" [(ngModel)]="newCompagnie.telephone" placeholder="Ex: 01 02 03 04 05">
+        <label class="form-label fw-bold">Téléphone</label>
+        <input type="text" class="form-control" name="compTel" [(ngModel)]="companyForm.contactPhone" placeholder="Ex: 01 02 03 04 05">
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-bold">Statut</label>
+        <select class="form-select" name="compStatus" [(ngModel)]="companyForm.status">
+          <option value="Partenaire Principal">Partenaire Principal</option>
+          <option value="Partenaire Actif">Partenaire Actif</option>
+          <option value="Inactif">Inactif</option>
+        </select>
       </div>
     </form>
   </div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="modal.close('cancel')">Annuler</button>
-    <button type="button" class="btn btn-primary" (click)="modal.close('save')" [disabled]="!newCompagnie.nom.trim()">Enregistrer</button>
+  <div class="modal-footer border-top">
+    <button type="button" class="btn btn-secondary px-4" (click)="modal.dismiss()">Annuler</button>
+    <button type="button" class="btn btn-primary px-4 shadow-sm" (click)="submitCompanyForm(modal)" [disabled]="isSaving || !(companyForm.name || companyForm.nom || '').trim()">
+      <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" *ngIf="isSaving"></span>
+      {{ isSaving ? 'Enregistrement...' : (isEditMode ? 'Enregistrer' : 'Ajouter') }}
+    </button>
   </div>
 </ng-template>

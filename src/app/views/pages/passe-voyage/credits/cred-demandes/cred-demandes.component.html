@@ -1,3 +1,133 @@
+<div class="d-flex justify-content-between align-items-center flex-wrap grid-margin mb-3">
+  <div>
+    <h4 class="mb-1 fw-bold text-dark">Demandes de Crédit Voyage</h4>
+    <p class="text-secondary fs-13px mb-0">Gérez les requêtes de crédit de vos passagers.</p>
+  </div>
+  <div class="d-flex align-items-center flex-wrap text-nowrap mt-2 mt-md-0">
+    <button type="button" class="btn btn-outline-primary btn-icon-text me-2" (click)="toggleAdvancedFilters()">
+      <i class="feather icon-filter me-1"></i>
+      {{ showAdvancedFilters ? 'Masquer Filtres' : 'Filtres Avancés' }}
+    </button>
+    <button class="btn btn-primary btn-icon-text" (click)="loadDemandes()" [disabled]="loading">
+      <i class="feather icon-refresh-cw me-1" [ngClass]="{'fa-spin': loading}"></i>
+      Actualiser
+    </button>
+  </div>
+</div>
+
+<!-- KPI Summary Cards -->
+<div class="row mb-4">
+  <div class="col-md-3 col-6 mb-3 mb-xl-0">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #0d6efd !important;">
+      <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-secondary fs-12px mb-1 fw-medium">Total Demandes</p>
+            <h4 class="fw-bold mb-0 text-primary">{{ countTotal }}</h4>
+          </div>
+          <i class="feather icon-file-text fs-2 text-primary"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3 col-6 mb-3 mb-xl-0">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #ffc107 !important;">
+      <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-secondary fs-12px mb-1 fw-medium">En Attente</p>
+            <h4 class="fw-bold mb-0 text-warning">{{ countEnAttente }}</h4>
+          </div>
+          <i class="feather icon-clock fs-2 text-warning"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3 col-6 mb-3 mb-xl-0">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #198754 !important;">
+      <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-secondary fs-12px mb-1 fw-medium">Approuvées</p>
+            <h4 class="fw-bold mb-0 text-success">{{ countApprouvees }}</h4>
+          </div>
+          <i class="feather icon-check-circle fs-2 text-success"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3 col-6 mb-3 mb-xl-0">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #dc3545 !important;">
+      <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-secondary fs-12px mb-1 fw-medium">Rejetées</p>
+            <h4 class="fw-bold mb-0 text-danger">{{ countRejetees }}</h4>
+          </div>
+          <i class="feather icon-x-circle fs-2 text-danger"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Filtres de Recherche (Présentation identique à Passagers) -->
+<div class="row mb-3" *ngIf="showAdvancedFilters">
+  <div class="col-md-12">
+    <div class="card border shadow-sm">
+      <div class="card-body">
+        <h6 class="card-title mb-3 fw-bold text-uppercase fs-12px text-secondary">Filtres de recherche</h6>
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label fs-12px text-secondary mb-1">Recherche globale</label>
+            <input type="text" class="form-control form-control-sm" placeholder="Réf, Passager, Tél, Trajet..." [(ngModel)]="searchTerm" (keyup.enter)="applyAdvancedFilters()">
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label fs-12px text-secondary mb-1">Statut</label>
+            <select class="form-select form-select-sm" [(ngModel)]="advStatusFilter" (change)="applyAdvancedFilters()">
+              <option value="">Tous les statuts</option>
+              <option value="En attente">En attente</option>
+              <option value="Approuvé">Approuvé</option>
+              <option value="Rejeté">Rejeté</option>
+            </select>
+          </div>
+
+          <div class="col-md-3" *ngIf="companiesList.length > 0">
+            <label class="form-label fs-12px text-secondary mb-1">Compagnie</label>
+            <select class="form-select form-select-sm" [(ngModel)]="advCompanyFilter" (change)="applyAdvancedFilters()">
+              <option value="">Toutes les compagnies</option>
+              <option *ngFor="let comp of companiesList" [value]="comp">{{ comp }}</option>
+            </select>
+          </div>
+
+          <div class="col-md-3" *ngIf="companiesList.length === 0">
+            <label class="form-label fs-12px text-secondary mb-1">Option Voyage</label>
+            <select class="form-select form-select-sm" [(ngModel)]="advTypeFilter" (change)="applyAdvancedFilters()">
+              <option value="">Tous les types</option>
+              <option value="Aller simple">Aller simple</option>
+              <option value="Aller-retour">Aller-retour</option>
+            </select>
+          </div>
+
+          <div class="col-md-3 d-flex align-items-end ms-auto">
+            <button class="btn btn-sm btn-primary me-2 w-50" (click)="applyAdvancedFilters()">
+              <i class="feather icon-filter me-1"></i> Filtrer
+            </button>
+            <button class="btn btn-sm btn-outline-secondary w-50" (click)="resetFilters()">
+              <i class="feather icon-refresh-cw me-1"></i> Réinitialiser
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Table Card (Style d'Origine) -->
 <div class="row">
   <div class="col-md-12 grid-margin stretch-card">
     <div class="card">
@@ -7,30 +137,46 @@
             <h5 class="mb-0">Demandes de Crédit Voyage</h5>
             <p class="text-muted mt-1" style="font-size: 13px;">Gérez les requêtes de crédit de vos passagers.</p>
           </div>
-          <button class="btn btn-primary btn-icon-text">
-            <i class="feather icon-refresh-cw btn-icon-prepend"></i>
-            Actualiser
-          </button>
+          <div class="input-group" style="width: 280px;">
+            <input type="text" class="form-control" placeholder="Réf, Passager, Trajet..." [(ngModel)]="searchTerm" (keyup.enter)="applyAdvancedFilters()" (keyup)="applyAdvancedFilters()">
+            <button class="btn btn-outline-secondary btn-icon" type="button" (click)="applyAdvancedFilters()">
+              <i class="feather icon-search"></i>
+            </button>
+          </div>
         </div>
 
-        <div class="table-responsive">
+        <div *ngIf="loading" class="text-center py-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Chargement...</span>
+          </div>
+        </div>
+
+        <div class="table-responsive" *ngIf="!loading">
           <table class="table table-hover mb-0">
             <thead>
               <tr>
-                <th>Réf.</th>
-                <th>Passager</th>
-                <th>Détails du Voyage</th>
-                <th class="text-end">Montant & Billet</th>
-                <th class="text-center">Score Client</th>
-                <th>Soumission</th>
-                <th>Statut</th>
-                <th class="text-center">Actions</th>
+                <th>RÉF.</th>
+                <th>PASSAGER</th>
+                <th>DÉTAILS DU VOYAGE</th>
+                <th class="text-end">MONTANT & BILLET</th>
+                <th class="text-center">SCORE CLIENT</th>
+                <th>SOUMISSION</th>
+                <th>STATUT</th>
+                <th class="text-center">ACTIONS</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let req of demandes">
                 <td><strong>{{ req.id }}</strong></td>
-                <td>{{ req.passager }}</td>
+                <td>
+                  <div class="fw-bold text-dark">{{ req.passager }}</div>
+                  <div class="text-muted small" *ngIf="req.phone">
+                    <i class="feather icon-phone" style="font-size: 11px;"></i> {{ req.phone }}
+                  </div>
+                  <div class="text-muted small mt-1" *ngIf="req.lieu">
+                    <i class="feather icon-map-pin" style="font-size: 11px;"></i> {{ req.lieu }}
+                  </div>
+                </td>
                 <td>
                   <div class="fw-bold">{{ req.trajet }} <span class="badge bg-secondary ms-1">{{ req.compagnie }}</span></div>
                   <div class="mt-1 d-flex align-items-center flex-wrap">
@@ -42,15 +188,15 @@
                   </div>
                 </td>
                 <td class="text-end">
-                  <div class="fw-bold text-primary">Total: {{ req.montant | number:'1.0-0' }} FCFA</div>
+                  <div class="fw-bold text-primary" style="font-size: 14px;">Crédit : {{ req.creditTransport | number:'1.0-0' }} XOF</div>
                   <div class="text-muted small mt-1">
-                    P.U: {{ req.prixUnitaire | number:'1.0-0' }} FCFA
+                    P.U: {{ req.prixUnitaire | number:'1.0-0' }} XOF • {{ req.billets }} Billet(s)
                   </div>
                   <div class="text-muted small mt-1">
-                    <i class="feather icon-users" style="font-size: 11px;"></i> {{ req.passagers }} Passager(s) • <i class="feather icon-copy" style="font-size: 11px;"></i> {{ req.billets }} Billet(s)
+                    Total Voyage: {{ req.montant | number:'1.0-0' }} XOF
                   </div>
-                  <div class="text-muted small mt-1">
-                    Frais de service: {{ req.frais }}F
+                  <div class="text-success small mt-1" style="font-size: 11px; font-weight: 600;">
+                    <i class="feather icon-check-circle" style="font-size: 10px;"></i> Frais au comptant: {{ req.frais | number:'1.0-0' }} F
                   </div>
                 </td>
                 <td class="text-center">
@@ -58,23 +204,33 @@
                     {{ req.score }} / 100
                   </span>
                 </td>
-                <td class="text-muted small">{{ req.date }}</td>
+                <td>
+                  <div class="fw-bold text-dark" style="font-size: 13px;">{{ req.dateOnly }}</div>
+                  <div class="text-muted small mt-1">
+                    <i class="feather icon-clock" style="font-size: 11px;"></i> {{ req.timeOnly }}
+                  </div>
+                </td>
                 <td>
                   <span class="badge" [ngClass]="{'bg-info': req.statut === 'En attente', 'bg-success': req.statut === 'Approuvé', 'bg-danger': req.statut === 'Rejeté'}">
                     {{ req.statut }}
                   </span>
                 </td>
                 <td class="text-center">
-                  <div *ngIf="req.statut === 'En attente'" class="d-flex justify-content-center">
-                    <button class="btn btn-sm btn-success btn-icon me-1" (click)="approuver(req)" title="Approuver">
+                  <div class="d-flex justify-content-center align-items-center gap-1">
+                    <button class="btn btn-sm btn-info btn-icon me-1" (click)="voirDetails(req)" title="Voir détails et billets">
+                      <i class="feather icon-eye"></i>
+                    </button>
+                    <button *ngIf="req.statut === 'En attente'" class="btn btn-sm btn-success btn-icon me-1" (click)="approuver(req)" title="Approuver">
                       <i class="feather icon-check"></i>
                     </button>
-                    <button class="btn btn-sm btn-danger btn-icon" (click)="rejeter(req)" title="Rejeter">
+                    <button *ngIf="req.statut === 'En attente'" class="btn btn-sm btn-danger btn-icon" (click)="rejeter(req)" title="Rejeter">
                       <i class="feather icon-x"></i>
                     </button>
                   </div>
-                  <span *ngIf="req.statut !== 'En attente'" class="text-muted small">Traitée</span>
                 </td>
+              </tr>
+              <tr *ngIf="demandes.length === 0">
+                <td colspan="8" class="text-center text-muted py-4">Aucune demande de crédit trouvée.</td>
               </tr>
             </tbody>
           </table>

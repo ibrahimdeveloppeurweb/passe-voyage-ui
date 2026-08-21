@@ -1,129 +1,157 @@
-<div class="row">
-  <div class="col-md-4 grid-margin stretch-card">
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title">Rôles Système</h5>
-        <p class="text-muted mb-4">Gérez les différents niveaux d'accès au backoffice.</p>
-        
-        <div class="list-group">
-          <a href="javascript:void(0);" class="list-group-item list-group-item-action" 
-             *ngFor="let role of roles; let first = first" 
-             [class.active]="first">
-            <div class="d-flex w-100 justify-content-between">
-              <h6 class="mb-1">{{ role.name }}</h6>
-              <span class="badge bg-light text-dark rounded-pill">{{ role.usersCount }}</span>
-            </div>
-            <p class="mb-1 mt-2 text-wrap" style="font-size: 13px;">{{ role.desc }}</p>
-          </a>
-        </div>
+<div class="d-flex justify-content-between align-items-center flex-wrap grid-margin mb-4">
+  <div>
+    <h4 class="mb-1 text-dark fw-bold">Gestion des Rôles & Permissions</h4>
+    <p class="text-muted mb-0 fs-13px">Définissez les niveaux d'accès et attribuez les permissions par module pour les utilisateurs du backoffice.</p>
+  </div>
+  <div>
+    <button type="button" class="btn btn-primary btn-icon-text px-3 py-2 shadow-sm" (click)="startNewRole()">
+      <i class="feather icon-plus-circle btn-icon-prepend me-1"></i> Nouveau Rôle
+    </button>
+  </div>
+</div>
 
-        <button class="btn btn-outline-primary w-100 mt-4" (click)="openModal(addRoleModal)">
-          <i class="feather icon-plus me-1"></i> Nouveau Rôle
-        </button>
-      </div>
+<!-- Tableau des Rôles Existants -->
+<div class="card mb-4 border shadow-sm">
+  <div class="card-body">
+    <h6 class="card-title mb-3 text-uppercase text-secondary fw-bold fs-12px">Liste des Rôles Système</h6>
+    
+    <div class="table-responsive">
+      <table class="table align-middle table-hover mb-0">
+        <thead class="bg-light">
+          <tr>
+            <th class="border-top-0 text-uppercase fs-11px fw-bold text-secondary py-3" style="width: 20%;">Nom du Rôle</th>
+            <th class="border-top-0 text-uppercase fs-11px fw-bold text-secondary py-3" style="width: 40%;">Description</th>
+            <th class="border-top-0 text-uppercase fs-11px fw-bold text-secondary text-center py-3" style="width: 15%;">Permissions</th>
+            <th class="border-top-0 text-uppercase fs-11px fw-bold text-secondary text-center py-3" style="width: 10%;">Utilisateurs</th>
+            <th class="border-top-0 text-uppercase fs-11px fw-bold text-secondary text-center py-3" style="width: 15%;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let role of roles" [class.table-active]="!isCreateMode && selectedRole?.uuid === role.uuid">
+            <td>
+              <span class="badge px-3 py-2 rounded-2 bg-primary fs-13px fw-semibold">
+                {{ role.nom }}
+              </span>
+            </td>
+            <td class="text-wrap text-dark fs-13px" style="max-width: 350px;">
+              {{ role.description || 'Aucune description disponible.' }}
+            </td>
+            <td class="text-center">
+              <span class="badge bg-info bg-opacity-10 text-info px-3 py-2 rounded-pill fw-bold fs-12px">
+                {{ role.paths?.length || 0 }} permission(s)
+              </span>
+            </td>
+            <td class="text-center text-dark fw-bold fs-14px">
+              {{ role.usersCount || 0 }}
+            </td>
+            <td class="text-center">
+              <div class="d-flex justify-content-center align-items-center gap-2">
+                <button class="btn btn-sm btn-outline-primary btn-icon" (click)="selectRole(role)" title="Gérer les permissions">
+                  <i class="feather icon-edit-2"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger btn-icon" *ngIf="role.uuid" (click)="selectRole(role); deleteSelectedRole()" title="Supprimer ce rôle">
+                  <i class="feather icon-trash-2"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
+</div>
 
-  <!-- Modal Template -->
-  <ng-template #addRoleModal let-modal>
-    <div class="modal-header">
-      <h5 class="modal-title">Ajouter un nouveau rôle</h5>
-      <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+<!-- Section Édition / Configuration des Permissions du Rôle Sélectionné -->
+<div class="card border shadow-sm" *ngIf="isCreateMode || selectedRole" id="permissionsEditorCard">
+  <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+    <div>
+      <h5 class="mb-1 text-dark fw-bold">
+        <i class="feather icon-shield text-primary me-2" *ngIf="!isCreateMode"></i>
+        <i class="feather icon-plus-circle text-success me-2" *ngIf="isCreateMode"></i>
+        {{ isCreateMode ? 'Création d\'un Nouveau Rôle' : ('Configuration du Rôle : ' + (selectedRole?.nom || '')) }}
+      </h5>
+      <p class="text-muted mb-0 fs-13px">Attribution des accès par module applicatif.</p>
     </div>
-    <div class="modal-body">
-      <form>
-        <div class="mb-3">
-          <label class="form-label">Nom du rôle</label>
-          <input type="text" class="form-control" name="roleName" [(ngModel)]="newRoleName" placeholder="Ex: Superviseur">
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Description</label>
-          <textarea class="form-control" name="roleDesc" [(ngModel)]="newRoleDesc" rows="3" placeholder="Description brève des accès"></textarea>
-        </div>
-      </form>
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" (click)="modal.close('cancel')">Annuler</button>
-      <button type="button" class="btn btn-primary" (click)="modal.close('save')" [disabled]="!newRoleName.trim()">Enregistrer</button>
-    </div>
-  </ng-template>
+    <button class="btn btn-outline-secondary btn-sm" (click)="cancelEdit()">
+      <i class="feather icon-x me-1"></i> Fermer
+    </button>
+  </div>
 
-  <div class="col-md-8 grid-margin stretch-card">
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title">Permissions : Super Admin</h5>
-        <div class="table-responsive">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Module</th>
-                <th class="text-center">Lecture</th>
-                <th class="text-center">Écriture</th>
-                <th class="text-center">Suppression</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Crédits & Billets</td>
-                <td class="text-center">
-                  <div class="form-check form-switch d-flex justify-content-center">
-                    <input type="checkbox" class="form-check-input" checked>
+  <div class="card-body">
+    <!-- Champs Nom & Description -->
+    <div class="row g-3 mb-4 p-3 bg-light rounded border">
+      <div class="col-md-5">
+        <label class="form-label fw-bold">Nom du rôle <span class="text-danger">*</span></label>
+        <input type="text" class="form-control" [(ngModel)]="roleForm.nom" placeholder="Ex: Superviseur Terrain">
+      </div>
+      <div class="col-md-7">
+        <label class="form-label fw-bold">Description</label>
+        <input type="text" class="form-control" [(ngModel)]="roleForm.description" placeholder="Description courte des accès et responsabilités">
+      </div>
+    </div>
+
+    <!-- Matrice des Permissions par Module -->
+    <h6 class="mb-3 fw-bold text-dark border-bottom pb-2">
+      <i class="feather icon-check-square text-primary me-2"></i> Droits d'Accès & Permissions
+    </h6>
+
+    <div class="row g-4">
+      <div *ngFor="let mod of groupedModules" class="col-md-6">
+        <div class="card border h-100 shadow-xs">
+          <div class="card-header bg-light d-flex justify-content-between align-items-center py-2 px-3">
+            <div class="d-flex align-items-center">
+              <i class="feather icon-folder text-primary me-2"></i>
+              <strong class="text-dark fs-14px">{{ mod.name }}</strong>
+              <span class="badge bg-primary bg-opacity-10 text-primary ms-2 rounded-pill fs-11px">
+                {{ mod.actions.length }} droit(s)
+              </span>
+            </div>
+            <div class="form-check form-switch m-0">
+              <input type="checkbox" class="form-check-input cursor-pointer"
+                     [id]="'selectAll_' + mod.id"
+                     [checked]="mod.checked"
+                     (change)="toggleModuleAll(mod, $event)">
+              <label class="form-check-label fs-12px text-muted fw-semibold cursor-pointer" [for]="'selectAll_' + mod.id">
+                Tout cocher
+              </label>
+            </div>
+          </div>
+          <div class="card-body py-3">
+            <div class="row g-2">
+              <div *ngFor="let action of mod.actions" class="col-12">
+                <div class="p-2 border rounded d-flex align-items-center bg-white">
+                  <div class="form-check m-0 d-flex align-items-center w-100">
+                    <input type="checkbox" 
+                           class="form-check-input me-2 border-primary cursor-pointer mt-0" 
+                           [(ngModel)]="action.checked" 
+                           (change)="updateModuleCheckedStatus(mod)"
+                           [id]="'check_' + action.uuid">
+                    <label class="form-check-label fs-13px cursor-pointer w-100" [for]="'check_' + action.uuid">
+                      <span class="fw-medium text-dark">{{ action.name }}</span>
+                      <small class="text-muted d-block font-monospace fs-11px" *ngIf="action.permission">
+                        {{ action.permission }}
+                      </small>
+                    </label>
                   </div>
-                </td>
-                <td class="text-center">
-                  <div class="form-check form-switch d-flex justify-content-center">
-                    <input type="checkbox" class="form-check-input" checked>
-                  </div>
-                </td>
-                <td class="text-center">
-                  <div class="form-check form-switch d-flex justify-content-center">
-                    <input type="checkbox" class="form-check-input" checked>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td>Recouvrements</td>
-                <td class="text-center">
-                  <div class="form-check form-switch d-flex justify-content-center">
-                    <input type="checkbox" class="form-check-input" checked>
-                  </div>
-                </td>
-                <td class="text-center">
-                  <div class="form-check form-switch d-flex justify-content-center">
-                    <input type="checkbox" class="form-check-input" checked>
-                  </div>
-                </td>
-                <td class="text-center">
-                  <div class="form-check form-switch d-flex justify-content-center">
-                    <input type="checkbox" class="form-check-input">
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td>Passagers</td>
-                <td class="text-center">
-                  <div class="form-check form-switch d-flex justify-content-center">
-                    <input type="checkbox" class="form-check-input" checked>
-                  </div>
-                </td>
-                <td class="text-center">
-                  <div class="form-check form-switch d-flex justify-content-center">
-                    <input type="checkbox" class="form-check-input" checked>
-                  </div>
-                </td>
-                <td class="text-center">
-                  <div class="form-check form-switch d-flex justify-content-center">
-                    <input type="checkbox" class="form-check-input" checked>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="mt-4 text-end">
-          <button class="btn btn-primary">Enregistrer les permissions</button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
+
+    <!-- Actions de sauvegarde -->
+    <div class="mt-4 pt-3 border-top text-end d-flex justify-content-end gap-2">
+      <button type="button" class="btn btn-secondary px-4" (click)="cancelEdit()">
+        Annuler
+      </button>
+      <button type="button" class="btn btn-primary px-4 shadow-sm" (click)="saveRoleAndPermissions()" [disabled]="isSaving || !roleForm.nom.trim()">
+        <i class="feather icon-save me-1" *ngIf="!isSaving"></i>
+        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" *ngIf="isSaving"></span>
+        {{ isSaving ? 'Enregistrement...' : (isCreateMode ? 'Créer le rôle' : 'Enregistrer les modifications') }}
+      </button>
+    </div>
+
   </div>
 </div>

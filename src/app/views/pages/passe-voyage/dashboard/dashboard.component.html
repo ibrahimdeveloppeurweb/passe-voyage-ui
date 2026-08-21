@@ -44,7 +44,7 @@
             </div>
             <div class="row">
               <div class="col-6 col-md-12 col-xl-5">
-                <h3 class="mb-2">1,545,000 FCFA</h3>
+                <h3 class="mb-2">1,545,000 XOF</h3>
                 <div class="d-flex align-items-baseline">
                   <p class="text-success">
                     <span>+3.3%</span>
@@ -88,7 +88,7 @@
             </div>
             <div class="row">
               <div class="col-6 col-md-12 col-xl-5">
-                <h3 class="mb-2">325,000 FCFA</h3>
+                <h3 class="mb-2">325,000 XOF</h3>
                 <div class="d-flex align-items-baseline">
                   <p class="text-danger">
                     <span>-2.8%</span>
@@ -187,7 +187,7 @@
             <tbody>
               <tr *ngFor="let d of dernieresDemandes">
                 <td>{{ d.passager }}</td>
-                <td class="text-end fw-bold">{{ d.montant | number:'1.0-0' }} FCFA</td>
+                <td class="text-end fw-bold">{{ d.montant | number:'1.0-0' }} XOF</td>
                 <td>
                   <span class="badge" [ngClass]="{'bg-success': d.statut === 'Approuvé', 'bg-warning': d.statut === 'En attente', 'bg-danger': d.statut === 'Rejeté'}">
                     {{ d.statut }}

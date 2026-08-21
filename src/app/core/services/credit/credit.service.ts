@@ -8,7 +8,7 @@ import { CreditRequest } from '../../../core/models/credit.model';
     providedIn: 'root'
 })
 export class CreditService {
-    private url = 'credits';
+    private url = 'credit';
     public creditRequest: CreditRequest | null = null;
     public edit: boolean = false;
 
@@ -22,14 +22,14 @@ export class CreditService {
         return this.creditRequest;
     }
 
-    getList(status?: string): Observable<CreditRequest[]> {
+    getList(params?: any): Observable<any> {
         if (!navigator.onLine) {
             NoInternetHelper.internet();
             return new Observable(obs => { obs.next(); obs.complete(); });
         }
 
-        const params = status ? { status } : {};
-        return this.api._get(`${this.url}/`, params).pipe(
+        const queryParams = typeof params === 'string' ? { status: params } : (params || {});
+        return this.api._get(`${this.url}/`, queryParams).pipe(
             map((response: any) => response),
             catchError((error: any) => throwError(() => error))
         );
@@ -66,6 +66,18 @@ export class CreditService {
         }
 
         return this.api._post(`${this.url}/${id}/reject`, { reason }).pipe(
+            map((response: any) => response),
+            catchError((error: any) => throwError(() => error))
+        );
+    }
+
+    getPayments(params?: any): Observable<any> {
+        if (!navigator.onLine) {
+            NoInternetHelper.internet();
+            return new Observable(obs => { obs.next(); obs.complete(); });
+        }
+
+        return this.api._get('private/payment', params || {}).pipe(
             map((response: any) => response),
             catchError((error: any) => throwError(() => error))
         );

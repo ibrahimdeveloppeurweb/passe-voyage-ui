@@ -1,3 +1,137 @@
+<div class="d-flex justify-content-between align-items-center flex-wrap grid-margin mb-3">
+  <div>
+    <h4 class="mb-1 fw-bold text-dark">Billets Émis (Pass)</h4>
+    <p class="text-secondary fs-13px mb-0">Registre des billets virtuels générés suite aux crédits accordés.</p>
+  </div>
+  <div class="d-flex align-items-center flex-wrap text-nowrap mt-2 mt-md-0">
+    <button type="button" class="btn btn-outline-primary btn-icon-text me-2" (click)="toggleAdvancedFilters()">
+      <i class="feather icon-filter me-1"></i>
+      {{ showAdvancedFilters ? 'Masquer Filtres' : 'Filtres Avancés' }}
+    </button>
+  </div>
+</div>
+
+<!-- KPI Summary Cards -->
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-5 g-3 mb-4">
+  <div class="col">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #0d6efd !important;">
+      <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-secondary fs-12px mb-1 fw-medium">Total Billets Émis</p>
+            <h4 class="fw-bold mb-0 text-primary">{{ countTotal }}</h4>
+          </div>
+          <i class="feather icon-credit-card fs-2 text-primary"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #198754 !important;">
+      <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-secondary fs-12px mb-1 fw-medium">Pass Valides</p>
+            <h4 class="fw-bold mb-0 text-success">{{ countValides }}</h4>
+          </div>
+          <i class="feather icon-check-circle fs-2 text-success"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #0dcaf0 !important;">
+      <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-secondary fs-12px mb-1 fw-medium">Pass Scannés</p>
+            <h4 class="fw-bold mb-0 text-info">{{ countConsommes }}</h4>
+          </div>
+          <i class="feather icon-check-square fs-2 text-info"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #dc3545 !important;">
+      <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-secondary fs-12px mb-1 fw-medium">Pass Refusés</p>
+            <h4 class="fw-bold mb-0 text-danger">{{ countRefuses }}</h4>
+          </div>
+          <i class="feather icon-x-circle fs-2 text-danger"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #6c757d !important;">
+      <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-secondary fs-12px mb-1 fw-medium">Annulés / Expirés</p>
+            <h4 class="fw-bold mb-0 text-secondary">{{ countAnnules }}</h4>
+          </div>
+          <i class="feather icon-alert-circle fs-2 text-secondary"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Filtres de Recherche (Présentation identique à Passagers) -->
+<div class="row mb-3" *ngIf="showAdvancedFilters">
+  <div class="col-md-12">
+    <div class="card border shadow-sm">
+      <div class="card-body">
+        <h6 class="card-title mb-3 fw-bold text-uppercase fs-12px text-secondary">Filtres de recherche</h6>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label fs-12px text-secondary mb-1">Recherche globale</label>
+            <input type="text" class="form-control form-control-sm" placeholder="N° Billet, Passager, Trajet..." [(ngModel)]="searchTerm" (keyup.enter)="applyAdvancedFilters()">
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label fs-12px text-secondary mb-1">Statut QR</label>
+            <select class="form-select form-select-sm" [(ngModel)]="advStatusFilter" (change)="applyAdvancedFilters()">
+              <option value="">Tous les statuts</option>
+              <option value="Valide">Valide</option>
+              <option value="Scanné">Scanné</option>
+              <option value="Consommé">Consommé</option>
+              <option value="Refusé">Refusé</option>
+              <option value="Expiré">Expiré</option>
+              <option value="Annulé">Annulé</option>
+            </select>
+          </div>
+
+          <div class="col-md-3" *ngIf="companiesList.length > 0">
+            <label class="form-label fs-12px text-secondary mb-1">Compagnie</label>
+            <select class="form-select form-select-sm" [(ngModel)]="advCompanyFilter" (change)="applyAdvancedFilters()">
+              <option value="">Toutes les compagnies</option>
+              <option *ngFor="let comp of companiesList" [value]="comp">{{ comp }}</option>
+            </select>
+          </div>
+
+          <div class="col-md-2 d-flex align-items-end ms-auto">
+            <button class="btn btn-sm btn-primary me-2 w-50" (click)="applyAdvancedFilters()">
+              <i class="feather icon-filter me-1"></i> Filtrer
+            </button>
+            <button class="btn btn-sm btn-outline-secondary w-50" (click)="resetFilters()">
+              <i class="feather icon-refresh-cw me-1"></i> Réinitialiser
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Table Card (Style d'Origine) -->
 <div class="row">
   <div class="col-md-12 grid-margin stretch-card">
     <div class="card">
@@ -7,44 +141,72 @@
             <h5 class="mb-0">Billets Émis (Pass)</h5>
             <p class="text-muted mt-1" style="font-size: 13px;">Registre des billets virtuels générés suite aux crédits accordés.</p>
           </div>
-          <div class="input-group" style="width: 250px;">
-            <input type="text" class="form-control" placeholder="N° Billet...">
-            <button class="btn btn-outline-secondary btn-icon" type="button">
+          <div class="input-group" style="width: 280px;">
+            <input type="text" class="form-control" placeholder="N° Billet ou Passager..." [(ngModel)]="searchTerm" (keyup.enter)="applyAdvancedFilters()" (keyup)="applyAdvancedFilters()">
+            <button class="btn btn-outline-secondary btn-icon" type="button" (click)="applyAdvancedFilters()">
               <i class="feather icon-search"></i>
             </button>
           </div>
         </div>
 
-        <div class="table-responsive">
+        <div *ngIf="loading" class="text-center py-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Chargement...</span>
+          </div>
+        </div>
+
+        <div class="table-responsive" *ngIf="!loading">
           <table class="table table-hover mb-0">
             <thead>
               <tr>
-                <th>N° Billet</th>
-                <th>Passager</th>
-                <th>Compagnie</th>
-                <th>Trajet</th>
-                <th>Validité</th>
-                <th>Statut QR</th>
-                <th>Aperçu</th>
+                <th>N° BILLET</th>
+                <th>PASSAGER</th>
+                <th>COMPAGNIE</th>
+                <th>TRAJET</th>
+                <th>GARE / AGENT CONTRÔLEUR</th>
+                <th>DATE DE VOYAGE</th>
+                <th>STATUT QR</th>
+                <th class="text-center">APERÇU</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let billet of billets">
+              <tr *ngFor="let billet of filteredBillets">
                 <td><strong>{{ billet.num }}</strong></td>
                 <td>{{ billet.passager }}</td>
                 <td><span class="badge bg-light text-dark border">{{ billet.compagnie }}</span></td>
                 <td>{{ billet.trajet }}</td>
+                <td>
+                  <ng-container *ngIf="billet.validatedAtStationName || billet.validatedByAgentName; else noControlTpl">
+                    <div class="fw-bold text-dark" style="font-size: 13px;" *ngIf="billet.validatedAtStationName">
+                      <i class="feather icon-map-pin text-primary me-1" style="font-size: 11px;"></i>{{ billet.validatedAtStationName }}
+                    </div>
+                    <div class="text-secondary small" style="font-size: 11px;" *ngIf="billet.validatedByAgentName">
+                      <i class="feather icon-user me-1" style="font-size: 10px;"></i>{{ billet.validatedByAgentName }}
+                    </div>
+                  </ng-container>
+                  <ng-template #noControlTpl>
+                    <span class="text-muted fs-13px">-</span>
+                  </ng-template>
+                </td>
                 <td>{{ billet.dateValidite }}</td>
                 <td>
-                  <span class="badge" [ngClass]="{'bg-success': billet.qrStatus === 'Valide', 'bg-secondary': billet.qrStatus === 'Consommé'}">
-                    {{ billet.qrStatus }}
+                  <span class="badge" [ngClass]="{
+                    'bg-success': billet.qrStatus === 'Valide',
+                    'bg-info': billet.qrStatus === 'Scanné' || billet.qrStatus === 'Consommé',
+                    'bg-danger': billet.qrStatus === 'Refusé' || billet.status === 'REFUSED',
+                    'bg-secondary': billet.qrStatus === 'Annulé' || billet.qrStatus === 'Expiré'
+                  }">
+                    {{ billet.qrStatus || billet.status }}
                   </span>
                 </td>
-                <td>
-                  <button class="btn btn-sm btn-outline-primary btn-icon" title="Voir QR Code">
+                <td class="text-center">
+                  <button class="btn btn-sm btn-outline-primary btn-icon" (click)="voirQrCode(billet)" title="Voir QR Code">
                     <i class="feather icon-maximize"></i>
                   </button>
                 </td>
+              </tr>
+              <tr *ngIf="filteredBillets.length === 0">
+                <td colspan="8" class="text-center text-muted py-3">Aucun billet trouvé.</td>
               </tr>
             </tbody>
           </table>

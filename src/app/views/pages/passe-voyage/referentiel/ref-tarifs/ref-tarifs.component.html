@@ -7,36 +7,47 @@
             <h5 class="mb-0">Grille Tarifaire de Base</h5>
             <p class="text-muted mt-1" style="font-size: 13px;">Ces prix servent de base pour le calcul du crédit accordé aux passagers.</p>
           </div>
-          <button class="btn btn-primary btn-icon-text" (click)="openModal(addTarifModal)">
+          <button class="btn btn-primary btn-icon-text" (click)="openNewModal(addTarifModal)">
             <i class="feather icon-plus btn-icon-prepend"></i>
             Nouveau Tarif
           </button>
         </div>
 
-        <div class="table-responsive">
+        <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Chargement en cours...</span>
+          </div>
+        </div>
+
+        <div *ngIf="!isLoading" class="table-responsive">
           <table class="table table-hover mb-0">
             <thead>
               <tr>
                 <th>Trajet (Départ - Arrivée)</th>
                 <th>Compagnie</th>
-                <th class="text-end">Prix de Base (FCFA)</th>
+                <th class="text-end">Prix de Base (XOF)</th>
                 <th class="text-end">Actions</th>
               </tr>
             </thead>
             <tbody>
+              <tr *ngIf="tarifs.length === 0">
+                <td colspan="4" class="text-center py-4 text-muted">
+                  Aucun tarif de base configuré.
+                </td>
+              </tr>
               <tr *ngFor="let tarif of tarifs">
                 <td><strong>{{ tarif.trajet }}</strong></td>
                 <td>
-                  <span class="badge" [ngClass]="{'bg-primary': tarif.compagnie === 'UTB', 'bg-secondary': tarif.compagnie === 'Toutes'}">
-                    {{ tarif.compagnie }}
+                  <span class="badge bg-primary">
+                    {{ tarif.company?.name || tarif.compagnie }}
                   </span>
                 </td>
-                <td class="text-end fw-bold">{{ tarif.prixBase | number:'1.0-0' }} FCFA</td>
+                <td class="text-end fw-bold">{{ (tarif.prix || tarif.price || 0) | number:'1.0-0' }} XOF</td>
                 <td class="text-end">
-                  <button class="btn btn-sm btn-outline-primary btn-icon me-2">
+                  <button class="btn btn-sm btn-outline-primary btn-icon me-2" (click)="openEditModal(addTarifModal, tarif)" title="Modifier">
                     <i class="feather icon-edit-2"></i>
                   </button>
-                  <button class="btn btn-sm btn-outline-danger btn-icon">
+                  <button class="btn btn-sm btn-outline-danger btn-icon" (click)="deleteTarif(tarif)" title="Supprimer">
                     <i class="feather icon-trash-2"></i>
                   </button>
                 </td>
@@ -52,39 +63,43 @@
 <!-- Modal Template -->
 <ng-template #addTarifModal let-modal>
   <div class="modal-header">
-    <h5 class="modal-title">Définir un Tarif de Base</h5>
+    <h5 class="modal-title">{{ isEditMode ? 'Modifier le Tarif de Base' : 'Définir un Tarif de Base' }}</h5>
     <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
   </div>
   <div class="modal-body">
-    <form>
+    <form (ngSubmit)="submitTarifForm(modal)">
       <div class="mb-3">
-        <label class="form-label">Sélectionner un Trajet</label>
-        <select class="form-select" name="tarifTrajet" [(ngModel)]="newTarif.trajet">
+        <label class="form-label">Sélectionner un Trajet <span class="text-danger">*</span></label>
+        <select class="form-select" name="tarifTrajet" [(ngModel)]="tarifForm.trajet" required>
           <option value="" disabled selected>Choisir un trajet...</option>
-          <option value="Abidjan - Yamoussoukro">Abidjan - Yamoussoukro</option>
-          <option value="Abidjan - Bouaké">Abidjan - Bouaké</option>
-          <option value="Bouaké - Korhogo">Bouaké - Korhogo</option>
+          <option *ngFor="let r of routes" [value]="r.uuid || (r.villeDepart + ' - ' + r.villeArrivee)">
+            {{ r.villeDepart || r.departureCity }} - {{ r.villeArrivee || r.arrivalCity }}
+          </option>
         </select>
       </div>
       <div class="mb-3">
-        <label class="form-label">Compagnie (Optionnel, si tarif spécifique)</label>
-        <select class="form-select" name="tarifCompagnie" [(ngModel)]="newTarif.compagnie">
-          <option value="Toutes">Général (Toutes)</option>
-          <option value="UTB">UTB</option>
-          <option value="MT">MT</option>
+        <label class="form-label">Compagnie <span class="text-danger">*</span></label>
+        <select class="form-select" name="tarifCompagnie" [(ngModel)]="tarifForm.compagnie" required>
+          <option value="" disabled>Sélectionner une compagnie...</option>
+          <option *ngFor="let comp of compagnies" [value]="comp.name || comp.nom">
+            {{ comp.name || comp.nom }}
+          </option>
         </select>
       </div>
       <div class="mb-3">
-        <label class="form-label">Prix de Base (FCFA)</label>
+        <label class="form-label">Prix de Base (XOF) <span class="text-danger">*</span></label>
         <div class="input-group">
-          <input type="number" class="form-control" name="tarifPrix" [(ngModel)]="newTarif.prixBase" placeholder="Ex: 5000">
-          <span class="input-group-text">FCFA</span>
+          <input type="number" class="form-control" name="tarifPrix" [(ngModel)]="tarifForm.prixBase" placeholder="Ex: 5000" min="1" required>
+          <span class="input-group-text">XOF</span>
         </div>
       </div>
     </form>
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-secondary" (click)="modal.close('cancel')">Annuler</button>
-    <button type="button" class="btn btn-primary" (click)="modal.close('save')" [disabled]="!newTarif.trajet || newTarif.prixBase <= 0">Enregistrer le tarif</button>
+    <button type="button" class="btn btn-primary" (click)="submitTarifForm(modal)" [disabled]="isSaving || !tarifForm.trajet || tarifForm.prixBase <= 0">
+      <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+      Enregistrer le tarif
+    </button>
   </div>
 </ng-template>

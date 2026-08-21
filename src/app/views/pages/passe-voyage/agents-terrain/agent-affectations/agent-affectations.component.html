@@ -1,93 +1,180 @@
 <div class="row">
   <div class="col-md-12 grid-margin stretch-card">
-    <div class="card">
+    <div class="card border shadow-sm">
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-4">
-          <h5 class="mb-0">Affectations des Agents</h5>
+          <div>
+            <h5 class="mb-1 text-dark fw-bold">Affectations des Agents Terrain</h5>
+            <p class="text-muted small mb-0">Gestion et programmation des affectations d'agents par gare et horaire de contrôle.</p>
+          </div>
           <button class="btn btn-primary btn-icon-text" (click)="openModal(addAffectationModal)">
-            <i class="feather icon-plus btn-icon-prepend"></i>
+            <i class="feather icon-plus btn-icon-prepend me-1"></i>
             Nouvelle Affectation
           </button>
         </div>
 
-        <div class="table-responsive">
-          <table class="table table-hover mb-0">
-            <thead>
+        <div *ngIf="isLoading" class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Chargement...</span>
+          </div>
+        </div>
+
+        <div class="table-responsive" *ngIf="!isLoading && affectations.length > 0">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light">
               <tr>
-                <th>Agent</th>
-                <th>Lieu / Gare</th>
-                <th>Date</th>
-                <th>Horaires</th>
-                <th>Actions</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary">Agent</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary">Lieu / Gare</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary">Date</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary">Horaires</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary text-center">Statut</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary text-end me-2">Actions</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let aff of affectations">
-                <td><strong>{{ aff.agent }}</strong></td>
-                <td>{{ aff.lieu }}</td>
-                <td>{{ aff.date }}</td>
-                <td><span class="badge bg-secondary">{{ aff.heureDebut }} - {{ aff.heureFin }}</span></td>
                 <td>
-                  <button class="btn btn-sm btn-outline-primary btn-icon me-2">
-                    <i class="feather icon-edit-2"></i>
-                  </button>
-                  <button class="btn btn-sm btn-outline-danger btn-icon">
-                    <i class="feather icon-trash-2"></i>
-                  </button>
+                  <strong class="text-dark">{{ aff.agentName }}</strong>
+                  <div class="mt-1">
+                    <span class="badge bg-light text-primary border border-primary-subtle px-2 py-1 fs-11px rounded-1 fw-bold me-1">
+                      <i class="feather icon-hash me-1"></i>{{ aff.agentCode }}
+                    </span>
+                    <span class="text-muted small fs-11px" *ngIf="aff.agentPhone !== 'N/A'">
+                      <i class="feather icon-phone me-1"></i>{{ aff.agentPhone }}
+                    </span>
+                  </div>
+                </td>
+                <td>
+                  <ng-container *ngIf="aff.lieu && aff.lieu !== 'Non affecté'; else unassignedTpl">
+                    <div class="fw-bold text-dark fs-13px">
+                      <i class="feather icon-map-pin text-primary me-1"></i>{{ aff.lieu }}
+                    </div>
+                  </ng-container>
+                  <ng-template #unassignedTpl>
+                    <span class="badge bg-light text-secondary border px-2 py-1 fs-11px">Non affecté</span>
+                  </ng-template>
+                </td>
+                <td class="fs-13px text-dark fw-medium">{{ aff.date }}</td>
+                <td>
+                  <span class="badge bg-light text-dark border px-2 py-1 fs-12px fw-medium">
+                    <i class="feather icon-clock me-1 text-primary"></i>{{ aff.heureDebut }} - {{ aff.heureFin }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  <span class="badge px-3 py-2 rounded-2 fs-11px fw-medium" [ngClass]="aff.isActivated ? 'bg-success' : 'bg-secondary'">
+                    {{ aff.isActivated ? 'Actif' : 'En Attente' }}
+                  </span>
+                </td>
+                <td class="text-end">
+                  <div class="d-flex justify-content-end gap-1">
+                    <button class="btn btn-sm btn-outline-primary btn-icon" (click)="openModal(addAffectationModal, aff)" title="Modifier l'affectation">
+                      <i class="feather icon-edit-2"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger btn-icon" (click)="deleteAffectation(aff)" title="Retirer l'affectation">
+                      <i class="feather icon-trash-2"></i>
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <div class="text-center py-5 text-muted" *ngIf="!isLoading && affectations.length === 0">
+          <i class="feather icon-user-x display-4 mb-2"></i>
+          <p class="mb-0">Aucune affectation d'agent enregistrée pour le moment.</p>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Modal Template -->
+<!-- Modal Template (Aligne avec la Capture 2) -->
 <ng-template #addAffectationModal let-modal>
-  <div class="modal-header">
-    <h5 class="modal-title">Créer une Affectation</h5>
+  <div class="modal-header border-bottom">
+    <h5 class="modal-title fw-bold text-dark d-flex align-items-center">
+      <i class="feather icon-map-pin text-primary me-2 fs-5"></i> Affectation Gare & Compagnie
+    </h5>
     <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
   </div>
-  <div class="modal-body">
+  <div class="modal-body py-4">
     <form>
+      <!-- Dropdown Agent (Seulement les agents vérifiés) -->
       <div class="mb-3">
-        <label class="form-label">Sélectionner l'Agent</label>
-        <select class="form-select" name="affAgent" [(ngModel)]="newAffectation.agent">
-          <option value="" disabled selected>Choisir un agent...</option>
-          <option value="Koffi Yao (AG-001)">Koffi Yao (AG-001)</option>
-          <option value="Sanogo Moussa (AG-002)">Sanogo Moussa (AG-002)</option>
-          <option value="Ouattara Fatou (AG-003)">Ouattara Fatou (AG-003)</option>
+        <label class="form-label fw-bold">Sélectionner l'Agent <span class="text-danger">*</span></label>
+        <select class="form-select" name="affAgent" [(ngModel)]="newAffectation.agentUuid" (change)="onAgentSelectChange()">
+          <option value="" disabled selected>{{ verifiedAgents.length === 0 ? 'Aucun agent vérifié disponible' : 'Choisir un agent vérifié...' }}</option>
+          <option *ngFor="let agent of verifiedAgents" [value]="agent.uuid || agent.id">
+            {{ (agent.lastname || agent.nom || '') + ' ' + (agent.firstname || agent.prenom || '') }} ({{ agent.agentCode || 'AG-' + agent.id }})
+          </option>
+        </select>
+        <small class="text-muted fs-12px mt-1 d-block" *ngIf="verifiedAgents.length > 0">
+          <i class="feather icon-shield text-success me-1"></i> Seuls les agents vérifiés et actifs sont disponibles pour affectation.
+        </small>
+        <small class="text-warning fs-12px mt-1 d-block" *ngIf="verifiedAgents.length === 0">
+          <i class="feather icon-alert-circle me-1"></i> Aucun agent vérifié trouvé. Veuillez valider un compte agent dans l'Annuaire.
+        </small>
+      </div>
+
+      <!-- Banner Cyan d'Information Agent (Idem Capture 2) -->
+      <div class="alert py-2 px-3 fs-13px mb-3 d-flex align-items-center rounded-2" 
+           style="background-color: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd;" 
+           *ngIf="selectedAgentDisplayName">
+        <i class="feather icon-user me-2 fs-5"></i>
+        <span><strong>Agent :</strong> {{ selectedAgentDisplayName }}</span>
+      </div>
+
+      <!-- Compagnie de Transport -->
+      <div class="mb-3">
+        <label class="form-label fw-bold">Compagnie de Transport <span class="text-danger">*</span></label>
+        <select class="form-select" name="affCompany" [(ngModel)]="newAffectation.companyUuid" (change)="onCompanyChange()">
+          <option value="" disabled selected>Choisir une compagnie...</option>
+          <option *ngFor="let comp of companies" [value]="comp.uuid || comp.id">
+            {{ comp.name || comp.nom }}
+          </option>
         </select>
       </div>
+
+      <!-- Gare Assignee obligatoire pour valider l affectation -->
       <div class="mb-3">
-        <label class="form-label">Gare d'Affectation</label>
-        <select class="form-select" name="affLieu" [(ngModel)]="newAffectation.lieu">
-          <option value="" disabled selected>Choisir une gare...</option>
-          <option value="Gare Adjamé Renault">Gare Adjamé Renault</option>
-          <option value="Gare Routière de Bouaké">Gare Routière de Bouaké</option>
-          <option value="Gare Principale Yakro">Gare Principale Yakro</option>
+        <label class="form-label fw-bold">Gare Assignée <span class="text-danger">*</span></label>
+        <select class="form-select" name="affLieu" [(ngModel)]="newAffectation.stationUuid" [disabled]="!newAffectation.companyUuid">
+          <option value="" disabled selected>
+            {{ !newAffectation.companyUuid ? 'Veuillez d\'abord choisir une compagnie' : (filteredStations.length === 0 ? 'Aucune gare disponible pour cette compagnie' : 'Choisir une gare...') }}
+          </option>
+          <option *ngFor="let st of filteredStations" [value]="st.uuid || st.id">
+            {{ st.name || st.nom }} {{ st.ville ? ('(' + st.ville + ')') : '' }}
+          </option>
         </select>
+        <small class="text-muted fs-12px mt-1 d-block" *ngIf="newAffectation.companyUuid && filteredStations.length > 0">
+          <i class="feather icon-check-circle text-success me-1"></i> {{ filteredStations.length }} gare(s) rattachée(s) à cette compagnie.
+        </small>
+        <small class="text-warning fs-12px mt-1 d-block" *ngIf="newAffectation.companyUuid && filteredStations.length === 0">
+          <i class="feather icon-alert-triangle me-1"></i> Aucune gare enregistrée pour cette compagnie. Veuillez créer une gare avant d'affecter un agent.
+        </small>
       </div>
+
       <div class="row">
         <div class="col-md-4 mb-3">
-          <label class="form-label">Date</label>
+          <label class="form-label fw-bold">Date</label>
           <input type="date" class="form-control" name="affDate" [(ngModel)]="newAffectation.date">
         </div>
         <div class="col-md-4 mb-3">
-          <label class="form-label">Heure Début</label>
+          <label class="form-label fw-bold">Heure Début</label>
           <input type="time" class="form-control" name="affDebut" [(ngModel)]="newAffectation.heureDebut">
         </div>
         <div class="col-md-4 mb-3">
-          <label class="form-label">Heure Fin</label>
+          <label class="form-label fw-bold">Heure Fin</label>
           <input type="time" class="form-control" name="affFin" [(ngModel)]="newAffectation.heureFin">
         </div>
       </div>
     </form>
   </div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="modal.close('cancel')">Annuler</button>
-    <button type="button" class="btn btn-primary" (click)="modal.close('save')" [disabled]="!newAffectation.agent || !newAffectation.lieu">Enregistrer</button>
+  <div class="modal-footer border-top">
+    <button type="button" class="btn btn-secondary px-4" (click)="modal.close('cancel')">Annuler</button>
+    <button type="button" class="btn text-white px-4 fw-bold" style="background-color: #06b6d4; border-color: #06b6d4;" (click)="saveAffectation(modal)" [disabled]="isSaving || !newAffectation.agentUuid || !newAffectation.companyUuid || !newAffectation.stationUuid">
+      <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1"></span>
+      Valider l'affectation
+    </button>
   </div>
 </ng-template>

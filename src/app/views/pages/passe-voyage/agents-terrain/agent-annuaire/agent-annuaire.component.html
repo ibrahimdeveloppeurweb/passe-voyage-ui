@@ -1,73 +1,416 @@
-<div class="row">
-  <div class="col-md-12 grid-margin stretch-card">
-    <div class="card">
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <h5 class="mb-0">Annuaire des Agents Terrain</h5>
-          <button class="btn btn-primary btn-icon-text" (click)="openModal(addAgentModal)">
-            <i class="feather icon-plus btn-icon-prepend"></i>
-            Nouvel Agent
-          </button>
-        </div>
+<div class="d-flex justify-content-between align-items-center flex-wrap grid-margin mb-3">
+  <div>
+    <h4 class="mb-1 fw-bold text-dark">Annuaire des Agents Terrain</h4>
+    <p class="text-secondary fs-13px mb-0">Gestion, affectation et suivi opérationnel de l'ensemble des agents de gare.</p>
+  </div>
+  <div class="d-flex align-items-center flex-wrap text-nowrap mt-2 mt-md-0">
+    <button type="button" class="btn btn-outline-primary btn-icon-text me-2" (click)="toggleAdvancedFilters()">
+      <i class="feather icon-filter me-1"></i>
+      {{ showAdvancedFilters ? 'Masquer Filtres' : 'Filtres Avancés' }}
+    </button>
+    <button type="button" class="btn btn-primary btn-icon-text" (click)="openCreateModal(createModal)">
+      <i class="feather icon-plus me-1"></i>
+      Nouvel Agent
+    </button>
+  </div>
+</div>
 
-        <div class="table-responsive">
-          <table class="table table-hover mb-0">
-            <thead>
-              <tr>
-                <th>Matricule</th>
-                <th>Nom & Prénom</th>
-                <th>Téléphone</th>
-                <th>Statut</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let agent of agents">
-                <td><strong>{{ agent.matricule }}</strong></td>
-                <td>{{ agent.nom }}</td>
-                <td>{{ agent.telephone }}</td>
-                <td>
-                  <span class="badge" [ngClass]="{'bg-success': agent.statut === 'Actif', 'bg-warning': agent.statut === 'En Congé'}">
-                    {{ agent.statut }}
-                  </span>
-                </td>
-                <td>
-                  <button class="btn btn-sm btn-outline-primary btn-icon me-2">
-                    <i class="feather icon-edit-2"></i>
-                  </button>
-                  <button class="btn btn-sm btn-outline-danger btn-icon">
-                    <i class="feather icon-trash-2"></i>
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+<!-- KPI Summary Cards -->
+<div class="row mb-4">
+  <div class="col-md col-6 mb-3 mb-xl-0">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #6c757d !important;">
+      <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-secondary fs-12px mb-1 fw-medium">Total Agents</p>
+            <h4 class="fw-bold mb-0 text-dark">{{ totalCount }}</h4>
+          </div>
+          <i class="feather icon-users fs-2 text-secondary"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md col-6 mb-3 mb-xl-0">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #198754 !important;">
+      <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-secondary fs-12px mb-1 fw-medium">Agents Actifs</p>
+            <h4 class="fw-bold mb-0 text-success">{{ activeCount }}</h4>
+          </div>
+          <i class="feather icon-user-check fs-2 text-success"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md col-6 mb-3 mb-xl-0">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #ffc107 !important;">
+      <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-secondary fs-12px mb-1 fw-medium">En Congé / Attente</p>
+            <h4 class="fw-bold mb-0 text-warning">{{ pendingCount }}</h4>
+          </div>
+          <i class="feather icon-clock fs-2 text-warning"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md col-6 mb-3 mb-xl-0">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #dc3545 !important;">
+      <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-secondary fs-12px mb-1 fw-medium">Agents Inactifs</p>
+            <h4 class="fw-bold mb-0 text-danger">{{ suspendedCount }}</h4>
+          </div>
+          <i class="feather icon-user-x fs-2 text-danger"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md col-6 mb-3 mb-xl-0">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #0dcaf0 !important;">
+      <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-secondary fs-12px mb-1 fw-medium">Gares Assignées</p>
+            <h4 class="fw-bold mb-0 text-info">{{ stationsCount }}</h4>
+          </div>
+          <i class="feather icon-map-pin fs-2 text-info"></i>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Modal Template -->
-<ng-template #addAgentModal let-modal>
-  <div class="modal-header">
-    <h5 class="modal-title">Ajouter un Agent Terrain</h5>
-    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+<!-- Filtres de Recherche -->
+<div class="row mb-3" *ngIf="showAdvancedFilters">
+  <div class="col-md-12">
+    <div class="card border shadow-sm">
+      <div class="card-body">
+        <h6 class="card-title mb-3 fw-bold text-uppercase fs-12px text-secondary">Filtres de recherche</h6>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label fs-12px text-secondary mb-1">Recherche libre</label>
+            <input type="text" class="form-control form-control-sm" placeholder="Nom, Code Agent, Téléphone..." [(ngModel)]="advSearchTerm" (keyup.enter)="applyAdvancedFilters()">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fs-12px text-secondary mb-1">Statut du Compte Agent</label>
+            <select class="form-select form-select-sm" [(ngModel)]="advStatusFilter" (change)="applyAdvancedFilters()">
+              <option value="">Tous les statuts</option>
+              <option value="APPROVED">Vérifié / Actif</option>
+              <option value="PENDING">En attente / En Congé</option>
+              <option value="DISABLED">Inactif / Suspendu</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fs-12px text-secondary mb-1">Résultats par page</label>
+            <select class="form-select form-select-sm" [(ngModel)]="advCountFilter" (change)="applyAdvancedFilters()">
+              <option [value]="5">5 agents</option>
+              <option [value]="10">10 agents</option>
+              <option [value]="20">20 agents</option>
+              <option [value]="50">50 agents</option>
+              <option [value]="1000">Tous les agents</option>
+            </select>
+          </div>
+          <div class="col-md-4 ms-auto d-flex align-items-end">
+            <button class="btn btn-sm btn-primary me-2 w-50" (click)="applyAdvancedFilters()">
+              <i class="feather icon-filter me-1"></i> Filtrer
+            </button>
+            <button class="btn btn-sm btn-outline-secondary w-50" (click)="resetFilters()">
+              <i class="feather icon-refresh-cw me-1"></i> Réinitialiser
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-  <div class="modal-body">
+</div>
+
+<!-- Main Table Card -->
+<div class="row">
+  <div class="col-md-12 grid-margin stretch-card">
+    <div class="card border shadow-sm">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h6 class="card-title mb-0 fw-bold text-uppercase">ANNUAIRE DES AGENTS ({{ agents.length }})</h6>
+        </div>
+
+        <div class="table-responsive" *ngIf="agents.length > 0">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light">
+              <tr>
+                <th class="text-uppercase fs-12px fw-bold text-secondary">Matricule</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary">Nom & Prénom</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary">Téléphone</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary">Compagnie / Gare</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary text-center">Statut</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary text-end me-2">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let agent of agents">
+                <td>
+                  <strong class="text-dark">{{ agent.code || agent.matricule || ('AG-' + (agent.id || 101)) }}</strong>
+                  <div class="mt-1" *ngIf="getAgentCodeCommercial(agent)">
+                    <span class="badge bg-light text-primary border border-primary-subtle px-2 py-1 fs-11px rounded-1 fw-bold">
+                      <i class="feather icon-hash me-1"></i>{{ getAgentCodeCommercial(agent) }}
+                    </span>
+                  </div>
+                </td>
+                <td class="fw-bold text-dark text-uppercase">
+                  {{ getAgentFullName(agent) }}
+                </td>
+                <td class="fw-medium text-dark">
+                  {{ agent.telephone || agent.phoneNumber || 'N/A' }}
+                </td>
+                <td>
+                  <ng-container *ngIf="getAgentCompanyName(agent) || getAgentStationName(agent); else unassignedTpl">
+                    <div class="fw-bold text-dark" *ngIf="getAgentCompanyName(agent)">
+                      {{ getAgentCompanyName(agent) }}
+                    </div>
+                    <div class="text-muted small" style="font-size: 11px; margin-top: 1px;" *ngIf="getAgentStationName(agent)">
+                      <i class="feather icon-map-pin me-1" style="font-size: 10px;"></i>
+                      {{ getAgentStationName(agent) }}
+                    </div>
+                  </ng-container>
+                  <ng-template #unassignedTpl>
+                    <span class="text-muted fs-13px">-</span>
+                  </ng-template>
+                </td>
+                <td class="text-center">
+                  <span class="badge px-3 py-2 rounded-2 fs-12px fw-medium" [ngClass]="getAgentStatusBadge(agent).bgClass">
+                    {{ getAgentStatusBadge(agent).label }}
+                  </span>
+                </td>
+                <td class="text-end">
+                  <div class="d-flex justify-content-end gap-1">
+                    <!-- Toggle Status (Lock/Unlock) -->
+                    <button class="btn btn-sm btn-icon" 
+                            [ngClass]="(getAgentStatusBadge(agent).label === 'Vérifié' || getAgentStatusBadge(agent).label === 'Actif') ? 'btn-outline-warning' : 'btn-outline-success'" 
+                            (click)="toggleStatus(agent)" 
+                            [title]="(getAgentStatusBadge(agent).label === 'Vérifié' || getAgentStatusBadge(agent).label === 'Actif') ? 'Suspendre cet agent' : 'Activer cet agent'">
+                      <i class="feather" [ngClass]="(getAgentStatusBadge(agent).label === 'Vérifié' || getAgentStatusBadge(agent).label === 'Actif') ? 'icon-lock' : 'icon-unlock'"></i>
+                    </button>
+                    <!-- Affecter Gare -->
+                    <button class="btn btn-sm btn-outline-info btn-icon" (click)="openAssignModal(assignModal, agent)" title="Affecter gare & compagnie">
+                      <i class="feather icon-map-pin"></i>
+                    </button>
+                    <!-- Modifier -->
+                    <button class="btn btn-sm btn-outline-primary btn-icon" (click)="openEditModal(editModal, agent)" title="Modifier les informations">
+                      <i class="feather icon-edit-2"></i>
+                    </button>
+                    <!-- Voir la fiche complète -->
+                    <button class="btn btn-sm btn-outline-secondary btn-icon" (click)="openDetailModal(detailModal, agent)" title="Voir la fiche complète">
+                      <i class="feather icon-eye"></i>
+                    </button>
+                    <!-- Supprimer -->
+                    <button class="btn btn-sm btn-outline-danger btn-icon" (click)="deleteAgent(agent)" title="Supprimer cet agent">
+                      <i class="feather icon-trash-2"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="text-center py-5 text-muted" *ngIf="agents.length === 0 && !isLoading">
+          <i class="feather icon-users display-4 mb-2"></i>
+          <p class="mb-0">Aucun agent terrain enregistré pour le moment.</p>
+        </div>
+
+        <div class="text-center py-5" *ngIf="isLoading">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Chargement...</span>
+          </div>
+          <p class="text-muted mt-2 mb-0">Chargement de l'annuaire des agents...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Nouvel Agent -->
+<ng-template #createModal let-modal>
+  <div class="modal-header border-bottom">
+    <h5 class="modal-title text-dark fw-bold">Créer un Agent Terrain</h5>
+    <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body py-4">
     <form>
-      <div class="mb-3">
-        <label class="form-label">Nom & Prénom</label>
-        <input type="text" class="form-control" name="agentNom" [(ngModel)]="newAgent.nom" placeholder="Ex: Koffi Yao">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-bold">Nom <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" name="cLastname" [(ngModel)]="newAgentForm.lastname" placeholder="Ex: Koffi">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-bold">Prénom <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" name="cFirstname" [(ngModel)]="newAgentForm.firstname" placeholder="Ex: Yao">
+        </div>
       </div>
       <div class="mb-3">
-        <label class="form-label">Numéro de Téléphone</label>
-        <input type="text" class="form-control" name="agentTel" [(ngModel)]="newAgent.telephone" placeholder="Ex: 01 02 03 04 05">
+        <label class="form-label fw-bold">Numéro de Téléphone <span class="text-danger">*</span></label>
+        <input type="tel" class="form-control" name="cPhone" [(ngModel)]="newAgentForm.phoneNumber" placeholder="Ex: +2250102030405">
+      </div>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-bold">Genre</label>
+          <select class="form-select" name="cGender" [(ngModel)]="newAgentForm.gender">
+            <option value="M">Homme</option>
+            <option value="F">Femme</option>
+          </select>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-bold">Lieu de résidence</label>
+          <input type="text" class="form-control" name="cResidence" [(ngModel)]="newAgentForm.residenceAddress" placeholder="Ex: Cocody Angré">
+        </div>
       </div>
     </form>
   </div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="modal.close('cancel')">Annuler</button>
-    <button type="button" class="btn btn-primary" (click)="modal.close('save')" [disabled]="!newAgent.nom.trim() || !newAgent.telephone.trim()">Enregistrer</button>
+  <div class="modal-footer border-top">
+    <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Annuler</button>
+    <button type="button" class="btn btn-primary" (click)="createAgent(modal)" [disabled]="isSaving || !newAgentForm.lastname.trim() || !newAgentForm.phoneNumber.trim()">
+      <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1"></span>
+      Enregistrer
+    </button>
+  </div>
+</ng-template>
+
+<!-- Modal Édition Agent -->
+<ng-template #editModal let-modal>
+  <div class="modal-header border-bottom">
+    <h5 class="modal-title text-dark fw-bold">Modifier l'Agent</h5>
+    <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body py-4">
+    <form>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-bold">Nom</label>
+          <input type="text" class="form-control" name="eLastname" [(ngModel)]="selectedAgent.lastname">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-bold">Prénom</label>
+          <input type="text" class="form-control" name="eFirstname" [(ngModel)]="selectedAgent.firstname">
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-bold">Numéro de Téléphone</label>
+        <input type="tel" class="form-control" name="ePhone" [(ngModel)]="selectedAgent.phoneNumber">
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-bold">Lieu de résidence</label>
+        <input type="text" class="form-control" name="eResidence" [(ngModel)]="selectedAgent.residenceAddress">
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer border-top">
+    <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Annuler</button>
+    <button type="button" class="btn btn-primary" (click)="updateAgent(modal)" [disabled]="isSaving">
+      <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1"></span>
+      Mettre à jour
+    </button>
+  </div>
+</ng-template>
+
+<!-- Modal Affecter Gare & Compagnie -->
+<ng-template #assignModal let-modal>
+  <div class="modal-header border-bottom">
+    <h5 class="modal-title text-dark fw-bold">Affectation Gare & Compagnie</h5>
+    <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body py-4">
+    <div class="alert alert-info py-2 fs-13px mb-3">
+      <i class="feather icon-user me-1"></i>
+      <strong>Agent :</strong> {{ getAgentFullName(selectedAgent) }}
+    </div>
+    <form>
+      <div class="mb-3">
+        <label class="form-label fw-bold">Compagnie de Transport <span class="text-danger">*</span></label>
+        <select class="form-select" name="aCompany" [(ngModel)]="assignForm.companyUuid" (change)="onCompanyChange()">
+          <option value="" disabled selected>Sélectionner une compagnie...</option>
+          <option *ngFor="let comp of companies" [value]="comp.uuid || comp.id">
+            {{ comp.name || comp.nom }}
+          </option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-bold">Gare Assignée <span class="text-danger">*</span></label>
+        <select class="form-select" name="aStation" [(ngModel)]="assignForm.stationUuid" [disabled]="!assignForm.companyUuid || filteredStations.length === 0">
+          <option value="" disabled selected>{{ !assignForm.companyUuid ? 'Veuillez d\'abord choisir une compagnie' : (filteredStations.length === 0 ? 'Aucune gare disponible' : 'Sélectionner une gare...') }}</option>
+          <option *ngFor="let st of filteredStations" [value]="st.uuid || st.id">
+            {{ st.name || st.nom }} {{ st.ville ? ('(' + st.ville + ')') : '' }}
+          </option>
+        </select>
+        <small class="text-muted fs-12px mt-1 d-block" *ngIf="assignForm.companyUuid && filteredStations.length > 0">
+          <i class="feather icon-check-circle text-success me-1"></i> {{ filteredStations.length }} gare(s) rattachée(s) à cette compagnie.
+        </small>
+        <small class="text-warning fs-12px mt-1 d-block" *ngIf="assignForm.companyUuid && filteredStations.length === 0">
+          <i class="feather icon-alert-circle me-1"></i> Aucune gare rattachée à cette compagnie.
+        </small>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer border-top">
+    <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Annuler</button>
+    <button type="button" class="btn btn-info text-white" (click)="saveAssignment(modal)" [disabled]="isSaving || !assignForm.companyUuid || !assignForm.stationUuid">
+      <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1"></span>
+      Valider l'affectation
+    </button>
+  </div>
+</ng-template>
+
+<!-- Modal Détails Agent -->
+<ng-template #detailModal let-modal>
+  <div class="modal-header border-bottom">
+    <h5 class="modal-title text-dark fw-bold">
+      <i class="feather icon-user me-2 text-primary"></i> Fiche Agent Terrain
+    </h5>
+    <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body py-4">
+    <div class="row align-items-center mb-4">
+      <div class="col">
+        <h4 class="fw-bold mb-1 text-dark">
+          {{ getAgentFullName(selectedAgent) }}
+        </h4>
+        <p class="text-secondary mb-1 fs-13px">
+          Matricule : <strong>{{ selectedAgent.code || selectedAgent.matricule || 'AG-001' }}</strong>
+          <span class="ms-2 badge bg-light text-primary border border-primary-subtle px-2 py-1 fs-11px rounded-1 fw-bold" *ngIf="getAgentCodeCommercial(selectedAgent)">
+            <i class="feather icon-hash me-1"></i>{{ getAgentCodeCommercial(selectedAgent) }}
+          </span>
+        </p>
+        <span class="badge px-3 py-2 rounded-2 fs-12px fw-medium" [ngClass]="getAgentStatusBadge(selectedAgent).bgClass">
+          {{ getAgentStatusBadge(selectedAgent).label }}
+        </span>
+      </div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-md-6">
+        <div class="card bg-light border-0 p-3">
+          <h6 class="fw-bold text-primary mb-2 fs-13px text-uppercase">Informations Personnelles</h6>
+          <p class="mb-1 fs-13px"><strong>Nom complet :</strong> {{ getAgentFullName(selectedAgent) }}</p>
+          <p class="mb-1 fs-13px"><strong>Téléphone :</strong> {{ selectedAgent.telephone || selectedAgent.phoneNumber || 'N/A' }}</p>
+          <p class="mb-1 fs-13px"><strong>Genre :</strong> {{ selectedAgent.gender === 'F' ? 'Femme' : 'Homme' }}</p>
+          <p class="mb-0 fs-13px"><strong>Résidence :</strong> {{ selectedAgent.residenceAddress || selectedAgent.residence || 'Abidjan' }}</p>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card bg-light border-0 p-3">
+          <h6 class="fw-bold text-primary mb-2 fs-13px text-uppercase">Affectation Professionnelle</h6>
+          <p class="mb-1 fs-13px" *ngIf="getAgentCodeCommercial(selectedAgent)"><strong>Code Commercial :</strong> <span class="badge bg-primary px-2 py-1 fs-12px ms-1">{{ getAgentCodeCommercial(selectedAgent) }}</span></p>
+          <p class="mb-1 fs-13px"><strong>Compagnie :</strong> {{ getAgentCompanyName(selectedAgent) || '-' }}</p>
+          <p class="mb-1 fs-13px"><strong>Gare assignée :</strong> {{ getAgentStationName(selectedAgent) || '-' }}</p>
+          <p class="mb-1 fs-13px"><strong>Date création :</strong> {{ selectedAgent.createdAt || '01/08/2026' }}</p>
+          <p class="mb-0 fs-13px"><strong>Scans aujourd'hui :</strong> <span class="badge bg-primary">12 billets</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer border-top">
+    <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Fermer</button>
   </div>
 </ng-template>

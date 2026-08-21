@@ -1,24 +1,32 @@
 <div class="row">
   <div class="col-md-8 mx-auto grid-margin stretch-card">
-    <div class="card">
+    <div class="card w-100">
       <div class="card-body">
         <h5 class="card-title mb-4">Configuration Globale Passe Voyage</h5>
         
-        <form>
+        <form [formGroup]="settingsForm" (ngSubmit)="saveSettings()">
           <div class="row mb-3">
             <div class="col-md-6">
-              <label class="form-label">Frais de Service par Ticket (FCFA)</label>
+              <label class="form-label">Frais de Service par Ticket (XOF)</label>
               <div class="input-group">
                 <span class="input-group-text"><i class="feather icon-dollar-sign"></i></span>
-                <input type="number" class="form-control" value="600">
+                <input type="number" class="form-control" formControlName="fraisServiceTicket"
+                       [ngClass]="{'is-invalid': settingsForm.get('fraisServiceTicket')?.invalid && settingsForm.get('fraisServiceTicket')?.touched}">
               </div>
               <small class="text-muted">Répartition: 150 (Terrain), 150 (Risque), 300 (Marge)</small>
+              <div *ngIf="settingsForm.get('fraisServiceTicket')?.invalid && settingsForm.get('fraisServiceTicket')?.touched" class="invalid-feedback d-block">
+                Ce champ est requis.
+              </div>
             </div>
             <div class="col-md-6">
               <label class="form-label">Délai Option Standard (Jours)</label>
               <div class="input-group">
                 <span class="input-group-text"><i class="feather icon-clock"></i></span>
-                <input type="number" class="form-control" value="14">
+                <input type="number" class="form-control" formControlName="delaiOptionStandard"
+                       [ngClass]="{'is-invalid': settingsForm.get('delaiOptionStandard')?.invalid && settingsForm.get('delaiOptionStandard')?.touched}">
+              </div>
+              <div *ngIf="settingsForm.get('delaiOptionStandard')?.invalid && settingsForm.get('delaiOptionStandard')?.touched" class="invalid-feedback d-block">
+                Ce champ est requis.
               </div>
             </div>
           </div>
@@ -28,12 +36,16 @@
           <h6 class="mb-3">Fonds de Roulement (Garantie UTB)</h6>
           <div class="row mb-3">
             <div class="col-md-12">
-              <label class="form-label">Réserve Financière Initiale (FCFA)</label>
+              <label class="form-label">Réserve Financière Initiale (XOF)</label>
               <div class="input-group">
                 <span class="input-group-text bg-primary text-white"><i class="feather icon-shield"></i></span>
-                <input type="text" class="form-control" value="10 000 000" readonly>
+                <input type="text" class="form-control" formControlName="reserveFinanciereInitiale"
+                       [ngClass]="{'is-invalid': settingsForm.get('reserveFinanciereInitiale')?.invalid && settingsForm.get('reserveFinanciereInitiale')?.touched}">
               </div>
               <small class="text-info mt-1 d-block"><i class="feather icon-info me-1"></i> Ce fonds sert de ligne de trésorerie pré-achetée auprès d'UTB.</small>
+              <div *ngIf="settingsForm.get('reserveFinanciereInitiale')?.invalid && settingsForm.get('reserveFinanciereInitiale')?.touched" class="invalid-feedback d-block">
+                Ce champ est requis.
+              </div>
             </div>
           </div>
 
@@ -43,18 +55,58 @@
           <div class="row mb-3">
             <div class="col-md-12">
               <label class="form-label">Clé API SMS de Notification</label>
-              <input type="password" class="form-control" value="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+              <input type="password" class="form-control" formControlName="cleApiSmsNotification"
+                     [ngClass]="{'is-invalid': settingsForm.get('cleApiSmsNotification')?.invalid && settingsForm.get('cleApiSmsNotification')?.touched}"
+                     placeholder="Saisissez la clé API SMS">
+              <div *ngIf="settingsForm.get('cleApiSmsNotification')?.invalid && settingsForm.get('cleApiSmsNotification')?.touched" class="invalid-feedback d-block">
+                La clé API SMS est requise.
+              </div>
             </div>
           </div>
 
           <div class="mt-4 pt-3 border-top text-end">
-            <button type="button" class="btn btn-primary btn-icon-text">
-              <i class="feather icon-save btn-icon-prepend"></i>
-              Sauvegarder les Paramètres
+            <button type="submit" class="btn btn-primary btn-icon-text" [disabled]="isSaving || settingsForm.invalid">
+              <i class="feather icon-save btn-icon-prepend" *ngIf="!isSaving"></i>
+              <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" *ngIf="isSaving"></span>
+              {{ isSaving ? 'Enregistrement...' : 'Sauvegarder les Paramètres' }}
             </button>
           </div>
         </form>
 
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Historique des modifications (placé en bas, pleine largeur) -->
+<div class="row mt-4 mb-5">
+  <div class="col-md-12 grid-margin stretch-card">
+    <div class="card w-100">
+      <div class="card-body">
+        <h5 class="card-title mb-4">HISTORIQUE DES MODIFICATIONS</h5>
+        <div class="table-responsive">
+          <table class="table table-hover table-striped mb-0">
+            <thead>
+              <tr>
+                <th class="text-uppercase">DATE</th>
+                <th class="text-uppercase">RAISON / DESCRIPTION</th>
+                <th class="text-uppercase">MODIFIÉ PAR</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of history">
+                <td>{{ (item.createdAt || item.created_at) | date:'dd/MM/yyyy HH:mm' }}</td>
+                <td>{{ item.description || 'Mise à jour des paramètres' }}</td>
+                <td>{{ item.createdByName || item.updatedBy || (item.createBy ? (item.createBy.nom + ' ' + item.createBy.prenom) : 'Administrateur') }}</td>
+              </tr>
+              <tr *ngIf="!history || history.length === 0">
+                <td colspan="3" class="text-center text-muted py-4">
+                  Aucun historique de modification disponible.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>

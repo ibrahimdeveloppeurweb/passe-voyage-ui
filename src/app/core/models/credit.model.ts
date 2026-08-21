@@ -22,3 +22,5 @@ export interface CreditRequest {
     tickets?: Ticket[];
     createdAt?: string;
 }
+
+export type Credit = CreditRequest;

@@ -1,46 +1,150 @@
-<div class="row">
-  <div class="col-md-12 grid-margin stretch-card">
-    <div class="card">
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center flex-wrap grid-margin mb-3">
+  <div>
+    <h4 class="mb-1 fw-bold text-dark">Créances en cours</h4>
+    <p class="text-secondary fs-13px mb-0">Gestion et suivi des crédits de voyage non remboursés.</p>
+  </div>
+  <div class="d-flex align-items-center flex-wrap text-nowrap mt-2 mt-md-0">
+    <button type="button" class="btn btn-outline-primary btn-icon-text me-2" (click)="toggleAdvancedFilters()">
+      <i class="feather icon-filter me-1"></i>
+      {{ showAdvancedFilters ? 'Masquer Filtres' : 'Filtres Avancés' }}
+    </button>
+  </div>
+</div>
+
+<!-- KPI Summary Cards -->
+<div class="row mb-4">
+  <div class="col-md-3 col-6 mb-3 mb-xl-0">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #dc3545 !important;">
+      <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center">
           <div>
-            <h5 class="mb-0">Créances en cours</h5>
-            <p class="text-muted mt-1" style="font-size: 13px;">Liste des crédits de voyage non remboursés.</p>
+            <p class="text-secondary fs-12px mb-1 fw-medium">Total à Recouvrer</p>
+            <h4 class="fw-bold mb-0 text-danger">{{ totalCreances | number:'1.0-0' }} XOF</h4>
           </div>
-          <div class="text-end">
-            <span class="text-muted d-block" style="font-size: 12px;">Total à recouvrer</span>
-            <h4 class="text-danger fw-bold mb-0">{{ totalCreances | number:'1.0-0' }} FCFA</h4>
+          <i class="feather icon-dollar-sign fs-2 text-danger"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6 mb-3 mb-xl-0">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #198754 !important;">
+      <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-secondary fs-12px mb-1 fw-medium">Dans les Temps</p>
+            <h4 class="fw-bold mb-0 text-success">{{ countDansLesTemps }}</h4>
+          </div>
+          <i class="feather icon-check-circle fs-2 text-success"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6 mb-3 mb-xl-0">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #ffc107 !important;">
+      <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-secondary fs-12px mb-1 fw-medium">En Retard (&lt; {{ delaiOptionGlobal }}j)</p>
+            <h4 class="fw-bold mb-0 text-warning">{{ countEnRetard }}</h4>
+          </div>
+          <i class="feather icon-clock fs-2 text-warning"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6 mb-3 mb-xl-0">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #b02a37 !important;">
+      <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-secondary fs-12px mb-1 fw-medium">Retard Critique (&gt; 30j)</p>
+            <h4 class="fw-bold mb-0 text-danger">{{ countCritique }}</h4>
+          </div>
+          <i class="feather icon-alert-triangle fs-2 text-danger"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Filtres de Recherche -->
+<div class="row mb-3" *ngIf="showAdvancedFilters">
+  <div class="col-md-12">
+    <div class="card border shadow-sm">
+      <div class="card-body">
+        <h6 class="card-title mb-3 fw-bold text-uppercase fs-12px text-secondary">Filtres de recherche</h6>
+        <div class="row g-3">
+          <div class="col-md-5">
+            <label class="form-label fs-12px text-secondary mb-1">Recherche libre</label>
+            <input type="text" class="form-control form-control-sm" placeholder="Réf. crédit, nom passager, téléphone, ID..." [(ngModel)]="advSearchTerm" (input)="applyFilters()" (keyup.enter)="loadCreances()">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fs-12px text-secondary mb-1">Statut du Retard</label>
+            <select class="form-select form-select-sm" [(ngModel)]="advStatusFilter" (change)="applyFilters()">
+              <option value="">Tous les statuts</option>
+              <option value="Dans les temps">Dans les temps</option>
+              <option value="En retard">En retard</option>
+              <option value="Critique">Critique (&gt; 30 jours)</option>
+            </select>
+          </div>
+          <div class="col-md-3 d-flex align-items-end">
+            <button class="btn btn-sm btn-primary me-2 w-50" (click)="loadCreances()">
+              <i class="feather icon-filter me-1"></i> Filtrer
+            </button>
+            <button class="btn btn-sm btn-outline-secondary w-50" (click)="resetFilters()">
+              <i class="feather icon-refresh-cw me-1"></i> Réinitialiser
+            </button>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-        <div class="table-responsive">
-          <table class="table table-hover mb-0">
-            <thead>
+<!-- Tableau des Créances -->
+<div class="row">
+  <div class="col-md-12 grid-margin stretch-card">
+    <div class="card border shadow-sm">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h6 class="card-title mb-0 fw-bold text-uppercase">LISTE DES CRÉANCES ({{ creances.length }})</h6>
+        </div>
+
+        <div class="table-responsive" *ngIf="creances.length > 0">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light">
               <tr>
-                <th>Réf. Crédit</th>
-                <th>Passager</th>
-                <th>Date d'Émission</th>
-                <th class="text-end">Montant Dû (FCFA)</th>
-                <th>Retard (Jours)</th>
-                <th>Statut</th>
-                <th>Actions</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary">Réf. Crédit</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary">Passager</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary">Date d'Émission</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary text-end">Montant Dû (XOF)</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary text-center">Retard (Jours)</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary text-center">Statut</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary text-end">Actions</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let creance of creances">
-                <td><strong>{{ creance.id }}</strong></td>
-                <td>{{ creance.passager }}</td>
-                <td>{{ creance.dateEmission }}</td>
-                <td class="text-end fw-bold text-danger">{{ creance.montant | number:'1.0-0' }}</td>
-                <td>{{ creance.joursRetard }} j</td>
+                <td><strong class="text-dark">{{ creance.refCredit }}</strong></td>
                 <td>
-                  <span class="badge" 
-                        [ngClass]="{'bg-success': creance.statut === 'Dans les temps', 'bg-warning': creance.statut === 'En retard', 'bg-danger': creance.statut === 'Critique'}">
+                  <div class="fw-medium text-dark">{{ creance.passagerName }}</div>
+                  <div class="text-muted small fs-11px">{{ creance.passagerIdCode }} • {{ creance.passagerPhone }}</div>
+                </td>
+                <td>{{ creance.dateEmission }}</td>
+                <td class="text-end fw-bold text-danger fs-14px">{{ creance.montant | number:'1.0-0' }}</td>
+                <td class="text-center fw-bold text-dark">{{ creance.joursRetard }} j</td>
+                <td class="text-center">
+                  <span class="badge px-3 py-2 rounded-2 fs-12px fw-medium" 
+                        [ngClass]="{
+                          'bg-success text-white': creance.statut === 'Dans les temps', 
+                          'bg-warning text-dark': creance.statut === 'En retard', 
+                          'bg-danger text-white': creance.statut === 'Critique'
+                        }">
                     {{ creance.statut }}
                   </span>
                 </td>
-                <td>
-                  <button class="btn btn-sm btn-outline-primary btn-icon" title="Voir détail">
+                <td class="text-end">
+                  <button class="btn btn-sm btn-outline-primary btn-icon" (click)="openDetailModal(detailModal, creance)" title="Voir détail">
                     <i class="feather icon-eye"></i>
                   </button>
                 </td>
@@ -48,7 +152,64 @@
             </tbody>
           </table>
         </div>
+
+        <div *ngIf="creances.length === 0" class="text-center py-5">
+          <i class="feather icon-inbox fs-1 text-muted d-block mb-2"></i>
+          <p class="text-muted fw-medium mb-0">Aucune créance enregistrée selon les filtres sélectionnés.</p>
+        </div>
       </div>
     </div>
   </div>
 </div>
+
+<!-- Modal Détail Créance -->
+<ng-template #detailModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title fw-bold">Détails de la Créance - {{ selectedCreance?.refCredit }}</h5>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body py-4" *ngIf="selectedCreance">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="text-muted small d-block">Passager</label>
+        <span class="fw-bold text-dark fs-15px">{{ selectedCreance.passagerName }}</span>
+        <div class="text-secondary small">{{ selectedCreance.passagerIdCode }}</div>
+      </div>
+      <div class="col-md-6">
+        <label class="text-muted small d-block">Téléphone</label>
+        <span class="fw-medium text-dark">{{ selectedCreance.passagerPhone }}</span>
+      </div>
+      <hr class="my-2">
+      <div class="col-md-6">
+        <label class="text-muted small d-block">Montant Dû</label>
+        <span class="fw-bold text-danger fs-16px">{{ selectedCreance.montant | number:'1.0-0' }} XOF</span>
+      </div>
+      <div class="col-md-6">
+        <label class="text-muted small d-block">Date d'Émission</label>
+        <span class="fw-medium text-dark">{{ selectedCreance.dateEmission }}</span>
+      </div>
+      <div class="col-md-6">
+        <label class="text-muted small d-block">Délai standard autorisé</label>
+        <span class="badge bg-secondary text-white">{{ selectedCreance.delaiOptionDays }} jours (Config globale)</span>
+      </div>
+      <div class="col-md-6">
+        <label class="text-muted small d-block">Retard cumulé</label>
+        <span class="fw-bold text-dark">{{ selectedCreance.joursRetard }} jour(s)</span>
+      </div>
+      <div class="col-12 mt-3">
+        <label class="text-muted small d-block mb-1">Statut du recouvrement</label>
+        <span class="badge px-3 py-2 rounded-2 fs-13px"
+              [ngClass]="{
+                'bg-success text-white': selectedCreance.statut === 'Dans les temps',
+                'bg-warning text-dark': selectedCreance.statut === 'En retard',
+                'bg-danger text-white': selectedCreance.statut === 'Critique'
+              }">
+          {{ selectedCreance.statut }}
+        </span>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Fermer</button>
+  </div>
+</ng-template>

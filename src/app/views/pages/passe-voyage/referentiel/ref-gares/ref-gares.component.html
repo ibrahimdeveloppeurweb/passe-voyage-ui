@@ -4,13 +4,19 @@
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-4">
           <h5 class="mb-0">Villes & Gares d'embarquement</h5>
-          <button class="btn btn-primary btn-icon-text" (click)="openModal(addGareModal)">
+          <button class="btn btn-primary btn-icon-text" (click)="openNewModal(addGareModal)">
             <i class="feather icon-plus btn-icon-prepend"></i>
             Nouvelle Gare
           </button>
         </div>
 
-        <div class="table-responsive">
+        <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Chargement en cours...</span>
+          </div>
+        </div>
+
+        <div *ngIf="!isLoading" class="table-responsive">
           <table class="table table-hover mb-0">
             <thead>
               <tr>
@@ -22,24 +28,35 @@
               </tr>
             </thead>
             <tbody>
+              <tr *ngIf="gares.length === 0">
+                <td colspan="5" class="text-center py-4 text-muted">
+                  Aucune gare d'embarquement trouvée.
+                </td>
+              </tr>
               <tr *ngFor="let gare of gares">
-                <td><strong>{{ gare.ville }}</strong></td>
-                <td>{{ gare.nom }}</td>
+                <td><strong>{{ gare.city?.name || gare.ville }}</strong></td>
+                <td>{{ gare.nom || gare.name }}</td>
                 <td>
-                  <span class="badge" [ngClass]="{'bg-primary': gare.compagnie === 'UTB', 'bg-secondary': gare.compagnie === 'Toutes'}">
-                    {{ gare.compagnie }}
+                  <span class="badge bg-primary">
+                    {{ gare.company?.name || gare.compagnie }}
                   </span>
                 </td>
                 <td>
-                  <span class="badge" [ngClass]="{'bg-success': gare.statut === 'Actif', 'bg-danger': gare.statut === 'Inactif'}">
-                    {{ gare.statut }}
+                  <span class="badge cursor-pointer" 
+                        (click)="toggleGareStatus(gare)"
+                        [title]="'Cliquer pour ' + ((gare.statut === 'Actif' || gare.isActive) ? 'désactiver' : 'activer')"
+                        [ngClass]="{
+                          'bg-success': gare.statut === 'Actif' || gare.isActive,
+                          'bg-danger': gare.statut === 'Inactif' || gare.isActive === false
+                        }">
+                    {{ (gare.statut === 'Actif' || gare.isActive) ? 'Actif' : 'Inactif' }}
                   </span>
                 </td>
                 <td>
-                  <button class="btn btn-sm btn-outline-primary btn-icon me-2">
+                  <button class="btn btn-sm btn-outline-primary btn-icon me-2" (click)="openEditModal(addGareModal, gare)" title="Modifier">
                     <i class="feather icon-edit-2"></i>
                   </button>
-                  <button class="btn btn-sm btn-outline-danger btn-icon">
+                  <button class="btn btn-sm btn-outline-danger btn-icon" (click)="deleteGare(gare)" title="Supprimer">
                     <i class="feather icon-trash-2"></i>
                   </button>
                 </td>
@@ -55,31 +72,42 @@
 <!-- Modal Template -->
 <ng-template #addGareModal let-modal>
   <div class="modal-header">
-    <h5 class="modal-title">Ajouter une Gare</h5>
+    <h5 class="modal-title">{{ isEditMode ? 'Modifier la Gare' : 'Ajouter une Gare' }}</h5>
     <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
   </div>
   <div class="modal-body">
-    <form>
+    <form (ngSubmit)="submitGareForm(modal)">
       <div class="mb-3">
-        <label class="form-label">Ville</label>
-        <input type="text" class="form-control" name="gareVille" [(ngModel)]="newGare.ville" placeholder="Ex: San-Pédro">
+        <label class="form-label">Ville <span class="text-danger">*</span></label>
+        <input type="text" class="form-control text-uppercase" name="gareVille" [(ngModel)]="gareForm.ville" (input)="gareForm.ville = (gareForm.ville || '').toUpperCase()" placeholder="EX: SAN-PÉDRO" required>
       </div>
       <div class="mb-3">
-        <label class="form-label">Nom de la Gare</label>
-        <input type="text" class="form-control" name="gareNom" [(ngModel)]="newGare.nom" placeholder="Ex: Gare Routière de San-Pédro">
+        <label class="form-label">Nom de la Gare <span class="text-danger">*</span></label>
+        <input type="text" class="form-control text-uppercase" name="gareNom" [(ngModel)]="gareForm.nom" (input)="gareForm.nom = (gareForm.nom || '').toUpperCase()" placeholder="EX: GARE ROUTIÈRE DE SAN-PÉDRO" required>
       </div>
       <div class="mb-3">
-        <label class="form-label">Compagnie Associée</label>
-        <select class="form-select" name="gareCompagnie" [(ngModel)]="newGare.compagnie">
-          <option value="Toutes">Toutes les compagnies</option>
-          <option value="UTB">UTB</option>
-          <option value="MT">MT</option>
+        <label class="form-label">Compagnie Associée <span class="text-danger">*</span></label>
+        <select class="form-select" name="gareCompagnie" [(ngModel)]="gareForm.compagnie" required>
+          <option value="" disabled>Sélectionner une compagnie</option>
+          <option *ngFor="let comp of compagnies" [value]="comp.name || comp.nom">
+            {{ comp.name || comp.nom }}
+          </option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Statut</label>
+        <select class="form-select" name="gareStatut" [(ngModel)]="gareForm.statut">
+          <option value="Actif">Actif</option>
+          <option value="Inactif">Inactif</option>
         </select>
       </div>
     </form>
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-secondary" (click)="modal.close('cancel')">Annuler</button>
-    <button type="button" class="btn btn-primary" (click)="modal.close('save')" [disabled]="!newGare.ville.trim() || !newGare.nom.trim()">Enregistrer</button>
+    <button type="button" class="btn btn-primary" (click)="submitGareForm(modal)" [disabled]="isSaving || !gareForm.ville.trim() || !gareForm.nom.trim()">
+      <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+      Enregistrer
+    </button>
   </div>
 </ng-template>

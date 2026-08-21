@@ -1,3 +1,120 @@
+<!-- Page Header & Action Buttons -->
+<div class="d-flex justify-content-between align-items-center flex-wrap grid-margin mb-3">
+  <div>
+    <h4 class="mb-1 fw-bold text-dark">Performances Journalières des Agents</h4>
+    <p class="text-secondary fs-13px mb-0">Suivi opérationnel des validations de billets, des refus et du chiffre d'affaires par agent contrôleur.</p>
+  </div>
+  <div class="d-flex align-items-center flex-wrap text-nowrap mt-2 mt-md-0">
+    <button type="button" class="btn btn-outline-primary btn-icon-text me-2" (click)="toggleAdvancedFilters()">
+      <i class="feather icon-filter me-1"></i>
+      {{ showAdvancedFilters ? 'Masquer Filtres' : 'Filtres Avancés' }}
+    </button>
+    <button type="button" class="btn btn-outline-secondary btn-icon-text" (click)="exportPerformances()">
+      <i class="feather icon-download me-1"></i>
+      Exporter
+    </button>
+  </div>
+</div>
+
+<!-- KPI Summary Cards -->
+<div class="row mb-4">
+  <div class="col-md-3 col-6 mb-3 mb-xl-0">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #198754 !important;">
+      <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-secondary fs-12px mb-1 fw-medium">Scans Validés</p>
+            <h4 class="fw-bold mb-0 text-success">{{ totalValidations }}</h4>
+          </div>
+          <i class="feather icon-check-circle fs-2 text-success"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3 col-6 mb-3 mb-xl-0">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #0d6efd !important;">
+      <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-secondary fs-12px mb-1 fw-medium">Ventes Physiques</p>
+            <h4 class="fw-bold mb-0 text-primary">{{ totalVentes | number:'1.0-0' }} <span class="fs-12px">XOF</span></h4>
+          </div>
+          <i class="feather icon-dollar-sign fs-2 text-primary"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3 col-6 mb-3 mb-xl-0">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #ffc107 !important;">
+      <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-secondary fs-12px mb-1 fw-medium">Billets Refusés</p>
+            <h4 class="fw-bold mb-0 text-warning">{{ totalRefuses }}</h4>
+          </div>
+          <i class="feather icon-alert-triangle fs-2 text-warning"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3 col-6 mb-3 mb-xl-0">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #dc3545 !important;">
+      <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-secondary fs-12px mb-1 fw-medium">Montant Refusé</p>
+            <h4 class="fw-bold mb-0 text-danger">{{ totalMontantRefuse | number:'1.0-0' }} <span class="fs-12px">XOF</span></h4>
+          </div>
+          <i class="feather icon-slash fs-2 text-danger"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Advanced Search & Filter Card -->
+<div class="row mb-4" *ngIf="showAdvancedFilters">
+  <div class="col-md-12">
+    <div class="card border shadow-sm">
+      <div class="card-body">
+        <h6 class="card-title mb-3 fw-bold text-uppercase fs-12px text-secondary">Filtres de recherche et d'analyse</h6>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label fs-12px text-secondary mb-1">Recherche libre</label>
+            <input type="text" class="form-control form-control-sm" placeholder="Agent, Code, Téléphone, Gare..." [(ngModel)]="advSearchTerm" (keyup.enter)="applyFilters()">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fs-12px text-secondary mb-1">Niveau d'Appréciation</label>
+            <select class="form-select form-select-sm" [(ngModel)]="advAppreciationFilter" (change)="applyFilters()">
+              <option value="">Toutes les appréciations</option>
+              <option value="EXCELLENT">Excellent</option>
+              <option value="BON">Bon</option>
+              <option value="MOYEN">Moyen</option>
+              <option value="FAIBLE">Faible / Aucune activité</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fs-12px text-secondary mb-1">Date des contrôles</label>
+            <input type="date" class="form-control form-control-sm" [(ngModel)]="filterDate" (change)="onDateChange()">
+          </div>
+          <div class="col-md-4 ms-auto d-flex align-items-end">
+            <button class="btn btn-sm btn-primary me-2 w-50" (click)="applyFilters()">
+              <i class="feather icon-filter me-1"></i> Filtrer
+            </button>
+            <button class="btn btn-sm btn-outline-secondary w-50" (click)="resetFilters()">
+              <i class="feather icon-refresh-cw me-1"></i> Réinitialiser
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Main Table Card -->
 <div class="row">
   <div class="col-md-12 grid-margin stretch-card">
     <div class="card">
@@ -5,25 +122,33 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
           <div>
             <h5 class="mb-0">Performances Journalières</h5>
-            <p class="text-muted mt-1" style="font-size: 13px;">Suivi des validations de billets et ventes physiques par agent.</p>
+            <p class="text-muted mt-1" style="font-size: 13px;">Suivi des validations de billets, des refus et des ventes physiques par agent.</p>
           </div>
           <div class="d-flex align-items-center">
-            <input type="date" class="form-control me-2" [value]="'2026-08-13'" style="max-width: 150px;">
-            <button class="btn btn-outline-secondary btn-icon-text">
-              <i class="feather icon-download btn-icon-prepend"></i>
+            <input type="date" class="form-control me-2" [(ngModel)]="filterDate" (change)="onDateChange()" style="max-width: 160px;">
+            <button class="btn btn-outline-secondary btn-icon-text" (click)="exportPerformances()">
+              <i class="feather icon-download btn-icon-prepend me-1"></i>
               Exporter
             </button>
           </div>
         </div>
 
-        <div class="table-responsive">
+        <div *ngIf="isLoading" class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Chargement...</span>
+          </div>
+        </div>
+
+        <div class="table-responsive" *ngIf="!isLoading && performances.length > 0">
           <table class="table table-hover mb-0">
             <thead>
               <tr>
                 <th>Agent</th>
                 <th>Gare (Aujourd'hui)</th>
                 <th class="text-center">Billets Validés (Scans)</th>
-                <th class="text-end">Ventes Physiques (FCFA)</th>
+                <th class="text-end">Ventes Physiques (XOF)</th>
+                <th class="text-center">Billets Refusés</th>
+                <th class="text-end">Montant Refusé (XOF)</th>
                 <th>Appréciation</th>
               </tr>
             </thead>
@@ -35,15 +160,24 @@
                   <span class="badge rounded-pill bg-light text-dark border">{{ perf.validations }}</span>
                 </td>
                 <td class="text-end fw-bold text-success">{{ perf.ventesPhysiques | number:'1.0-0' }}</td>
+                <td class="text-center">
+                  <span class="badge rounded-pill bg-light text-dark border">{{ perf.refusedCount }}</span>
+                </td>
+                <td class="text-end fw-bold text-danger">{{ perf.montantRefuse | number:'1.0-0' }}</td>
                 <td>
                   <span class="badge" 
-                        [ngClass]="{'bg-success': perf.statut === 'Excellent', 'bg-primary': perf.statut === 'Bon', 'bg-warning': perf.statut === 'Moyen'}">
+                        [ngClass]="getBadgeClass(perf.statut || perf.appreciation || '')">
                     {{ perf.statut }}
                   </span>
                 </td>
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <div class="text-center py-5 text-muted" *ngIf="!isLoading && performances.length === 0">
+          <i class="feather icon-activity display-4 mb-2"></i>
+          <p class="mb-0">Aucune donnée de performance enregistrée pour les critères sélectionnés.</p>
         </div>
       </div>
     </div>

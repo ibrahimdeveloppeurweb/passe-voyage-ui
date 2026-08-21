@@ -1,92 +1,143 @@
-<div class="row">
-  <div class="col-md-12 grid-margin stretch-card">
-    <div class="card">
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <h5 class="mb-0">Membres de l'équipe</h5>
-          <button class="btn btn-primary btn-icon-text" (click)="openModal(addUserModal)">
-            <i class="feather icon-plus btn-icon-prepend"></i>
-            Nouvel Utilisateur
-          </button>
-        </div>
+<div class="d-flex justify-content-between align-items-center flex-wrap grid-margin mb-4">
+  <div>
+    <h4 class="mb-1 text-dark fw-bold">Membres de l'équipe</h4>
+    <p class="text-muted mb-0 fs-13px">Gérez les comptes des collaborateurs du backoffice et leurs niveaux d'accès.</p>
+  </div>
+  <div>
+    <button type="button" class="btn btn-primary btn-icon-text px-3 py-2 shadow-sm" (click)="openNewModal(userModal)">
+      <i class="feather icon-plus-circle btn-icon-prepend me-1"></i> Nouvel Utilisateur
+    </button>
+  </div>
+</div>
 
-        <div class="table-responsive">
-          <table class="table table-hover mb-0">
-            <thead>
-              <tr>
-                <th>Nom & Prénom</th>
-                <th>Email</th>
-                <th>Rôle</th>
-                <th>Statut</th>
-                <th>Dernière Connexion</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let user of users">
-                <td>{{ user.name }}</td>
-                <td>{{ user.email }}</td>
-                <td>{{ user.role }}</td>
-                <td>
-                  <span class="badge" [ngClass]="{'bg-success': user.status === 'Actif', 'bg-secondary': user.status === 'Inactif'}">
-                    {{ user.status }}
-                  </span>
-                </td>
-                <td>{{ user.date }}</td>
-                <td>
-                  <button class="btn btn-sm btn-outline-primary btn-icon me-2">
-                    <i class="feather icon-edit-2"></i>
-                  </button>
-                  <button class="btn btn-sm btn-outline-danger btn-icon">
-                    <i class="feather icon-trash-2"></i>
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+<div class="card border shadow-sm">
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table align-middle table-hover mb-0">
+        <thead class="bg-light">
+          <tr>
+            <th class="border-top-0 text-uppercase fs-11px fw-bold text-secondary py-3" style="width: 25%;">Nom & Prénom</th>
+            <th class="border-top-0 text-uppercase fs-11px fw-bold text-secondary py-3" style="width: 25%;">Email</th>
+            <th class="border-top-0 text-uppercase fs-11px fw-bold text-secondary py-3" style="width: 20%;">Rôle</th>
+            <th class="border-top-0 text-uppercase fs-11px fw-bold text-secondary text-center py-3" style="width: 10%;">Statut</th>
+            <th class="border-top-0 text-uppercase fs-11px fw-bold text-secondary text-center py-3" style="width: 10%;">Création</th>
+            <th class="border-top-0 text-uppercase fs-11px fw-bold text-secondary text-center py-3" style="width: 10%;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of users">
+            <td>
+              <div class="d-flex align-items-center">
+                <div class="avatar-sm me-3 rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center fw-bold fs-14px" style="width: 36px; height: 36px;">
+                  {{ (user.fullName || user.nom || 'U').charAt(0).toUpperCase() }}
+                </div>
+                <div>
+                  <h6 class="mb-0 text-dark fw-semibold fs-14px">{{ user.fullName || user.nom }}</h6>
+                </div>
+              </div>
+            </td>
+            <td class="text-secondary fs-13px">
+              {{ user.email || user.username }}
+            </td>
+            <td>
+              <span class="badge bg-light text-dark border px-3 py-2 rounded-2 fs-12px fw-medium">
+                {{ getUserRoleDisplay(user) }}
+              </span>
+            </td>
+            <td class="text-center">
+              <span class="badge cursor-pointer px-3 py-2 rounded-pill fs-12px shadow-xs" 
+                    [ngClass]="user.isEnabled !== false ? 'bg-success text-white' : 'bg-secondary text-white'"
+                    (click)="toggleUserStatus(user)"
+                    [title]="user.isEnabled !== false ? 'Cliquer pour désactiver ce compte' : 'Cliquer pour activer ce compte'">
+                {{ user.isEnabled !== false ? 'Actif' : 'Inactif' }}
+              </span>
+            </td>
+            <td class="text-center text-muted fs-12px">
+              {{ user.createdAt ? (user.createdAt | date:'yyyy-MM-dd') : '2026-08-10' }}
+            </td>
+            <td class="text-center">
+              <div class="d-flex justify-content-center align-items-center gap-2">
+                <button class="btn btn-sm btn-icon btn-outline-primary" (click)="openEditModal(userModal, user)" title="Modifier le collaborateur">
+                  <i class="feather icon-edit-2"></i>
+                </button>
+                <button class="btn btn-sm btn-icon" 
+                        [ngClass]="user.isEnabled !== false ? 'btn-outline-warning' : 'btn-outline-success'"
+                        (click)="toggleUserStatus(user)" 
+                        [title]="user.isEnabled !== false ? 'Désactiver le compte' : 'Activer le compte'">
+                  <i class="feather" [ngClass]="user.isEnabled !== false ? 'icon-slash' : 'icon-check'"></i>
+                </button>
+                <button class="btn btn-sm btn-icon btn-outline-danger" (click)="deleteUser(user)" title="Supprimer ce compte">
+                  <i class="feather icon-trash-2"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="users.length === 0 && !isLoading">
+            <td colspan="6" class="text-center py-4 text-muted">
+              Aucun membre de l'équipe enregistré.
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
 
-<!-- Modal Template -->
-<ng-template #addUserModal let-modal>
-  <div class="modal-header">
-    <h5 class="modal-title">Ajouter un collaborateur</h5>
-    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+<!-- Modal Ajouter / Modifier Collaborateur -->
+<ng-template #userModal let-modal>
+  <div class="modal-header border-bottom">
+    <h5 class="modal-title text-dark fw-bold">
+      {{ isEditMode ? 'Modifier le collaborateur' : 'Ajouter un collaborateur' }}
+    </h5>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
   </div>
-  <div class="modal-body">
-    <form>
-      <div class="row">
-        <div class="col-md-6 mb-3">
-          <label class="form-label">Nom & Prénom</label>
-          <input type="text" class="form-control" name="userName" [(ngModel)]="newUser.name" placeholder="Ex: Jean Dupont">
-        </div>
-        <div class="col-md-6 mb-3">
-          <label class="form-label">Email</label>
-          <input type="email" class="form-control" name="userEmail" [(ngModel)]="newUser.email" placeholder="jean@passevoyage.ci">
+  
+  <div class="modal-body py-4">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label fw-bold">Nom & Prénom <span class="text-danger">*</span></label>
+        <input type="text" class="form-control" [(ngModel)]="userForm.nom" placeholder="Ex: Jean Dupont">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-bold">Email <span class="text-danger">*</span></label>
+        <input type="email" class="form-control" [(ngModel)]="userForm.email" placeholder="jean@passevoyage.ci">
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label fw-bold">Rôle <span class="text-danger">*</span></label>
+        <select class="form-select" [(ngModel)]="userForm.roleUuid">
+          <option *ngFor="let role of roles" [value]="role.uuid || role.nom">
+            {{ role.nom }}
+          </option>
+        </select>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label fw-bold">
+          {{ isEditMode ? 'Nouveau mot de passe (optionnel)' : 'Mot de passe' }}
+        </label>
+        <input type="password" class="form-control" [(ngModel)]="userForm.password" [placeholder]="isEditMode ? 'Laisser vide pour ne pas modifier' : 'Mot de passe sécurisé'">
+        <small class="text-muted fs-11px" *ngIf="!isEditMode && !userForm.password">
+          Par défaut: PasseVoyage2026!
+        </small>
+      </div>
+
+      <div class="col-md-12">
+        <div class="form-check form-switch mt-2 p-2 bg-light rounded border d-flex align-items-center">
+          <input type="checkbox" class="form-check-input ms-0 me-3 cursor-pointer" id="userIsEnabled" [(ngModel)]="userForm.isEnabled">
+          <label class="form-check-label fw-bold text-dark cursor-pointer mb-0" for="userIsEnabled">
+            Compte actif (autoriser l'accès au système Passe Voyage)
+          </label>
         </div>
       </div>
-      <div class="row">
-        <div class="col-md-6 mb-3">
-          <label class="form-label">Rôle</label>
-          <select class="form-select" name="userRole" [(ngModel)]="newUser.role">
-            <option value="Super Admin">Super Admin</option>
-            <option value="Finance">Finance</option>
-            <option value="Manager Terrain">Manager Terrain</option>
-          </select>
-        </div>
-        <div class="col-md-6 mb-3">
-          <label class="form-label">Mot de passe temporaire</label>
-          <input type="password" class="form-control" value="PasseVoyage2026" disabled>
-          <small class="text-muted mt-1">Généré automatiquement</small>
-        </div>
-      </div>
-    </form>
+    </div>
   </div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="modal.close('cancel')">Annuler</button>
-    <button type="button" class="btn btn-primary" (click)="modal.close('save')" [disabled]="!newUser.name.trim() || !newUser.email.trim()">Ajouter l'utilisateur</button>
+
+  <div class="modal-footer border-top">
+    <button type="button" class="btn btn-secondary px-4" (click)="modal.dismiss()">Annuler</button>
+    <button type="button" class="btn btn-primary px-4 shadow-sm" (click)="submitUserForm(modal)" [disabled]="isSaving || !userForm.nom.trim() || !userForm.email.trim()">
+      <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" *ngIf="isSaving"></span>
+      {{ isSaving ? 'Enregistrement...' : (isEditMode ? 'Enregistrer les modifications' : 'Ajouter l\'utilisateur') }}
+    </button>
   </div>
 </ng-template>

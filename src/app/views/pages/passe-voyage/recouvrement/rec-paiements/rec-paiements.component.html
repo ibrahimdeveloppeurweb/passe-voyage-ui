@@ -1,96 +1,223 @@
-<div class="row">
-  <div class="col-md-12 grid-margin stretch-card">
-    <div class="card">
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <div>
-            <h5 class="mb-0">Paiements Reçus</h5>
-            <p class="text-muted mt-1" style="font-size: 13px;">Historique des remboursements de crédits de voyage.</p>
-          </div>
-          <button class="btn btn-primary btn-icon-text" (click)="openModal(addPaiementModal)">
-            <i class="feather icon-plus btn-icon-prepend"></i>
-            Enregistrer un paiement
-          </button>
-        </div>
+<div class="d-flex justify-content-between align-items-center flex-wrap grid-margin mb-3">
+  <div>
+    <h4 class="mb-1 fw-bold text-dark">Paiements Reçus</h4>
+    <p class="text-secondary fs-13px mb-0">Historique et gestion de tous les remboursements de crédits et paiements de frais de service.</p>
+  </div>
+  <div class="d-flex align-items-center flex-wrap text-nowrap mt-2 mt-md-0">
+    <button type="button" class="btn btn-outline-primary btn-icon-text" (click)="toggleAdvancedFilters()">
+      <i class="feather icon-filter me-1"></i>
+      {{ showAdvancedFilters ? 'Masquer Filtres' : 'Filtres Avancés' }}
+    </button>
+  </div>
+</div>
 
-        <div class="table-responsive">
-          <table class="table table-hover mb-0">
-            <thead>
-              <tr>
-                <th>Réf. Paiement</th>
-                <th>Passager</th>
-                <th>Date & Heure</th>
-                <th>Mode de Paiement</th>
-                <th class="text-end">Montant (FCFA)</th>
-                <th>Statut</th>
-                <th>Reçu</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let pmt of paiements">
-                <td><strong>{{ pmt.ref }}</strong></td>
-                <td>{{ pmt.passager }}</td>
-                <td>{{ pmt.date }}</td>
-                <td>
-                  <span class="badge bg-light text-dark border">
-                    <i class="feather icon-smartphone me-1" *ngIf="pmt.methode === 'Mobile Money'"></i>
-                    <i class="feather icon-briefcase me-1" *ngIf="pmt.methode === 'Espèces (Gare)'"></i>
-                    {{ pmt.methode }}
-                  </span>
-                </td>
-                <td class="text-end fw-bold text-success">+{{ pmt.montant | number:'1.0-0' }}</td>
-                <td>
-                  <span class="badge bg-success">{{ pmt.statut }}</span>
-                </td>
-                <td>
-                  <button class="btn btn-sm btn-outline-secondary btn-icon" title="Télécharger le reçu">
-                    <i class="feather icon-download"></i>
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+<!-- KPI Summary Cards -->
+<div class="row mb-4">
+  <div class="col-md-4 col-12 mb-3 mb-xl-0">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #198754 !important;">
+      <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-secondary fs-12px mb-1 fw-medium">Total Remboursé (Crédits)</p>
+            <h4 class="fw-bold mb-0 text-success">{{ totalMontantRembourse | number:'1.0-0' }} XOF</h4>
+          </div>
+          <i class="feather icon-check-circle fs-2 text-success"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4 col-12 mb-3 mb-xl-0">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #0d6efd !important;">
+      <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-secondary fs-12px mb-1 fw-medium">Frais de Service Encaissés</p>
+            <h4 class="fw-bold mb-0 text-primary">{{ totalFraisService | number:'1.0-0' }} XOF</h4>
+          </div>
+          <i class="feather icon-file-text fs-2 text-primary"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4 col-12 mb-3 mb-xl-0">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #6c757d !important;">
+      <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-secondary fs-12px mb-1 fw-medium">Total Transactions</p>
+            <h4 class="fw-bold mb-0 text-dark">{{ countEncaissements }}</h4>
+          </div>
+          <i class="feather icon-list fs-2 text-secondary"></i>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Modal Template -->
-<ng-template #addPaiementModal let-modal>
-  <div class="modal-header">
-    <h5 class="modal-title">Enregistrer un Remboursement Manuel</h5>
-    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
-  </div>
-  <div class="modal-body">
-    <form>
-      <div class="mb-3">
-        <label class="form-label">Sélectionner le Passager (Débiteur)</label>
-        <select class="form-select" name="pmtPassager" [(ngModel)]="newPaiement.passager">
-          <option value="" disabled selected>Choisir un passager...</option>
-          <option value="Bamba Ali (PS-1047)">Bamba Ali (PS-1047)</option>
-          <option value="Kouassi Marie (PS-1046)">Kouassi Marie (PS-1046)</option>
-          <option value="Kone Salif (PS-0892)">Kone Salif (PS-0892)</option>
-        </select>
-      </div>
-      <div class="mb-3">
-        <label class="form-label">Montant Remboursé (FCFA)</label>
-        <div class="input-group">
-          <input type="number" class="form-control" name="pmtMontant" [(ngModel)]="newPaiement.montant" placeholder="Ex: 2000">
-          <span class="input-group-text">FCFA</span>
+<!-- Filtres de Recherche -->
+<div class="row mb-3" *ngIf="showAdvancedFilters">
+  <div class="col-md-12">
+    <div class="card border shadow-sm">
+      <div class="card-body">
+        <h6 class="card-title mb-3 fw-bold text-uppercase fs-12px text-secondary">Filtres de recherche</h6>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label fs-12px text-secondary mb-1">Recherche libre</label>
+            <input type="text" class="form-control form-control-sm" placeholder="Réf. paiement, nom passager, téléphone, ID..." [(ngModel)]="advSearchTerm" (input)="applyFilters()" (keyup.enter)="loadPaiements()">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fs-12px text-secondary mb-1">Type de Paiement</label>
+            <select class="form-select form-select-sm" [(ngModel)]="advTypeFilter" (change)="applyFilters()">
+              <option value="">Tous les types</option>
+              <option value="Remboursement Crédit">Remboursement Crédit</option>
+              <option value="Frais de Service">Frais de Service</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fs-12px text-secondary mb-1">Mode de Paiement</label>
+            <select class="form-select form-select-sm" [(ngModel)]="advMethodFilter" (change)="applyFilters()">
+              <option value="">Tous les modes</option>
+              <option value="Mobile Money">Mobile Money</option>
+              <option value="Espèces (Gare)">Espèces (Gare / Guichet)</option>
+              <option value="Virement Bancaire">Virement Bancaire</option>
+            </select>
+          </div>
+          <div class="col-md-2 d-flex align-items-end">
+            <button class="btn btn-sm btn-primary me-2 w-50" (click)="loadPaiements()">
+              <i class="feather icon-filter me-1"></i> Filtrer
+            </button>
+            <button class="btn btn-sm btn-outline-secondary w-50" (click)="resetFilters()">
+              <i class="feather icon-refresh-cw me-1"></i> Réinitialiser
+            </button>
+          </div>
         </div>
       </div>
-      <div class="mb-3">
-        <label class="form-label">Mode d'encaissement</label>
-        <select class="form-select" name="pmtMethode" [(ngModel)]="newPaiement.methode">
-          <option value="Espèces (Gare)">Espèces (au Guichet)</option>
-          <option value="Virement Bancaire">Virement Bancaire</option>
-        </select>
+    </div>
+  </div>
+</div>
+
+<!-- Tableau des Paiements Reçus -->
+<div class="row">
+  <div class="col-md-12 grid-margin stretch-card">
+    <div class="card border shadow-sm">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h6 class="card-title mb-0 fw-bold text-uppercase">HISTORIQUE DES ENCAISSEMENTS ({{ paiements.length }})</h6>
+        </div>
+
+        <div class="table-responsive" *ngIf="paiements.length > 0">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light">
+              <tr>
+                <th class="text-uppercase fs-12px fw-bold text-secondary">Réf. Paiement</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary">Passager</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary text-center">Type de Paiement</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary">Date &amp; Heure</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary">Mode de Paiement</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary text-end">Montant (XOF)</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary text-center">Statut</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let pmt of paiements">
+                <td><strong class="text-dark">{{ pmt.ref }}</strong></td>
+                <td>
+                  <div class="fw-medium text-dark">{{ pmt.passagerName }}</div>
+                  <div class="text-muted small fs-11px">{{ pmt.passagerIdCode }} • {{ pmt.passagerPhone }}</div>
+                </td>
+                <td class="text-center">
+                  <span class="badge px-3 py-2 rounded-2 fs-11px fw-medium"
+                        [ngClass]="{
+                          'bg-success text-white': pmt.typePaiement === 'Remboursement Crédit',
+                          'bg-primary text-white': pmt.typePaiement === 'Frais de Service'
+                        }">
+                    {{ pmt.typePaiement }}
+                  </span>
+                </td>
+                <td>{{ pmt.date }}</td>
+                <td>
+                  <span class="badge bg-light text-dark border px-2 py-1 fs-12px">
+                    <i class="feather icon-smartphone me-1 text-primary" *ngIf="pmt.methode === 'Mobile Money'"></i>
+                    <i class="feather icon-briefcase me-1 text-purple" *ngIf="pmt.methode === 'Espèces (Gare)'"></i>
+                    {{ pmt.methode }}
+                  </span>
+                </td>
+                <td class="text-end fw-bold fs-14px" [ngClass]="{'text-success': pmt.typePaiement === 'Remboursement Crédit', 'text-primary': pmt.typePaiement === 'Frais de Service'}">
+                  +{{ pmt.montant | number:'1.0-0' }}
+                </td>
+                <td class="text-center">
+                  <span class="badge bg-success px-3 py-2 rounded-2 fs-12px fw-medium">{{ pmt.statut }}</span>
+                </td>
+                <td class="text-end">
+                  <button class="btn btn-sm btn-outline-primary btn-icon" (click)="openReceiptModal(receiptModal, pmt)" title="Voir Reçu">
+                    <i class="feather icon-file-text"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div *ngIf="paiements.length === 0" class="text-center py-5">
+          <i class="feather icon-inbox fs-1 text-muted d-block mb-2"></i>
+          <p class="text-muted fw-medium mb-0">Aucun paiement enregistré selon les filtres sélectionnés.</p>
+        </div>
       </div>
-    </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Reçu de Paiement -->
+<ng-template #receiptModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title fw-bold">Reçu de Transaction - {{ selectedPaiement?.ref }}</h5>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body py-4" *ngIf="selectedPaiement">
+    <div class="text-center mb-4">
+      <i class="feather icon-check-circle text-success fs-1 mb-2 d-block"></i>
+      <h4 class="fw-bold mb-1" [ngClass]="{'text-success': selectedPaiement.typePaiement === 'Remboursement Crédit', 'text-primary': selectedPaiement.typePaiement === 'Frais de Service'}">
+        +{{ selectedPaiement.montant | number:'1.0-0' }} XOF
+      </h4>
+      <span class="badge px-3 py-1 me-2" [ngClass]="{'bg-success': selectedPaiement.typePaiement === 'Remboursement Crédit', 'bg-primary': selectedPaiement.typePaiement === 'Frais de Service'}">
+        {{ selectedPaiement.typePaiement }}
+      </span>
+      <span class="badge bg-success px-3 py-1">Paiement Validé</span>
+    </div>
+
+    <div class="bg-light p-3 rounded-3 border mb-3">
+      <div class="d-flex justify-content-between mb-2">
+        <span class="text-secondary small">Réf. Transaction :</span>
+        <span class="fw-bold text-dark">{{ selectedPaiement.ref }}</span>
+      </div>
+      <div class="d-flex justify-content-between mb-2">
+        <span class="text-secondary small">Nature de l'opération :</span>
+        <span class="fw-bold text-dark">{{ selectedPaiement.typePaiement }}</span>
+      </div>
+      <div class="d-flex justify-content-between mb-2">
+        <span class="text-secondary small">Passager :</span>
+        <span class="fw-bold text-dark">{{ selectedPaiement.passagerName }}</span>
+      </div>
+      <div class="d-flex justify-content-between mb-2">
+        <span class="text-secondary small">Matricule ID :</span>
+        <span class="fw-medium text-dark">{{ selectedPaiement.passagerIdCode }}</span>
+      </div>
+      <div class="d-flex justify-content-between mb-2">
+        <span class="text-secondary small">Téléphone :</span>
+        <span class="fw-medium text-dark">{{ selectedPaiement.passagerPhone }}</span>
+      </div>
+      <div class="d-flex justify-content-between mb-2">
+        <span class="text-secondary small">Date &amp; Heure :</span>
+        <span class="fw-medium text-dark">{{ selectedPaiement.date }}</span>
+      </div>
+      <div class="d-flex justify-content-between">
+        <span class="text-secondary small">Mode d'encaissement :</span>
+        <span class="fw-bold text-primary">{{ selectedPaiement.methode }}</span>
+      </div>
+    </div>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="modal.close('cancel')">Annuler</button>
-    <button type="button" class="btn btn-primary" (click)="modal.close('save')" [disabled]="!newPaiement.passager || newPaiement.montant <= 0">Valider l'encaissement</button>
+    <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Fermer</button>
   </div>
 </ng-template>
