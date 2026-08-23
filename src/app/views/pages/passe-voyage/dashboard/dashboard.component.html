@@ -8,7 +8,7 @@
         <i data-feather="calendar" appFeatherIcon></i>
       </button>
       <input class="form-control border-primary bg-transparent" placeholder="yyyy-mm-dd"
-          name="dp" [(ngModel)]="currentDate" ngbDatepicker #d="ngbDatepicker">
+          name="dp" [(ngModel)]="currentDate" ngbDatepicker #d="ngbDatepicker" (dateSelect)="onDateSelect($event)">
     </div>
     <button type="button" class="btn btn-outline-primary btn-icon-text me-2 mb-2 mb-md-0">
       <i class="btn-icon-prepend" data-feather="printer" appFeatherIcon></i>
@@ -44,11 +44,11 @@
             </div>
             <div class="row">
               <div class="col-6 col-md-12 col-xl-5">
-                <h3 class="mb-2">1,545,000 XOF</h3>
+                <h3 class="mb-2">{{ approvedAmount | number:'1.0-0' }} XOF</h3>
                 <div class="d-flex align-items-baseline">
-                  <p class="text-success">
-                    <span>+3.3%</span>
-                    <i data-feather="arrow-up" appFeatherIcon class="icon-sm mb-1"></i>
+                  <p [ngClass]="approvedPercentage >= 0 ? 'text-success' : 'text-danger'">
+                    <span>{{ approvedPercentage >= 0 ? '+' : '' }}{{ approvedPercentage }}%</span>
+                    <i [attr.data-feather]="approvedPercentage >= 0 ? 'arrow-up' : 'arrow-down'" appFeatherIcon class="icon-sm mb-1"></i>
                   </p>
                 </div>
               </div>
@@ -88,11 +88,11 @@
             </div>
             <div class="row">
               <div class="col-6 col-md-12 col-xl-5">
-                <h3 class="mb-2">325,000 XOF</h3>
+                <h3 class="mb-2">{{ overdueAmount | number:'1.0-0' }} XOF</h3>
                 <div class="d-flex align-items-baseline">
-                  <p class="text-danger">
-                    <span>-2.8%</span>
-                    <i data-feather="arrow-down" appFeatherIcon class="icon-sm mb-1"></i>
+                  <p [ngClass]="overduePercentage <= 0 ? 'text-success' : 'text-danger'">
+                    <span>{{ overduePercentage >= 0 ? '+' : '' }}{{ overduePercentage }}%</span>
+                    <i [attr.data-feather]="overduePercentage >= 0 ? 'arrow-up' : 'arrow-down'" appFeatherIcon class="icon-sm mb-1"></i>
                   </p>
                 </div>
               </div>
@@ -131,11 +131,11 @@
             </div>
             <div class="row">
               <div class="col-6 col-md-12 col-xl-5">
-                <h3 class="mb-2">452</h3>
+                <h3 class="mb-2">{{ ticketsIssued }}</h3>
                 <div class="d-flex align-items-baseline">
-                  <p class="text-success">
-                    <span>+2.8%</span>
-                    <i data-feather="arrow-up" appFeatherIcon class="icon-sm mb-1"></i>
+                  <p [ngClass]="ticketsPercentage >= 0 ? 'text-success' : 'text-danger'">
+                    <span>{{ ticketsPercentage >= 0 ? '+' : '' }}{{ ticketsPercentage }}%</span>
+                    <i [attr.data-feather]="ticketsPercentage >= 0 ? 'arrow-up' : 'arrow-down'" appFeatherIcon class="icon-sm mb-1"></i>
                   </p>
                 </div>
               </div>
@@ -189,7 +189,13 @@
                 <td>{{ d.passager }}</td>
                 <td class="text-end fw-bold">{{ d.montant | number:'1.0-0' }} XOF</td>
                 <td>
-                  <span class="badge" [ngClass]="{'bg-success': d.statut === 'Approuvé', 'bg-warning': d.statut === 'En attente', 'bg-danger': d.statut === 'Rejeté'}">
+                  <span class="badge" [ngClass]="{
+                    'bg-success': d.statut === 'Approuvé' || d.statut === 'Terminé', 
+                    'bg-info': d.statut === 'Actif',
+                    'bg-warning': d.statut === 'En attente' || d.statut === 'En attente de validation', 
+                    'bg-danger': d.statut === 'Rejeté' || d.statut === 'Annulé',
+                    'bg-secondary': !['Approuvé', 'Terminé', 'Actif', 'En attente', 'En attente de validation', 'Rejeté', 'Annulé'].includes(d.statut)
+                  }">
                     {{ d.statut }}
                   </span>
                 </td>

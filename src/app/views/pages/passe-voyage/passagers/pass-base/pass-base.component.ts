@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { PassengerService, PassengerItem } from '../../../../../core/services/passenger/passenger.service';
 import Swal from 'sweetalert2';
 import { Subject, takeUntil } from 'rxjs';
+import { environment } from '../../../../../../environments/environment';
 
 @Component({
   selector: 'app-pass-base',
@@ -427,7 +428,13 @@ export class PassBaseComponent implements OnInit, OnDestroy {
       return type === 'avatar' ? this.defaultAvatar : this.defaultDocPlaceholder;
     }
     if (url.startsWith('/')) {
-      return 'http://localhost:8000' + url;
+      let baseUrl = environment.serverUrl;
+      if (baseUrl.endsWith('/api')) {
+        baseUrl = baseUrl.substring(0, baseUrl.length - 4);
+      } else if (baseUrl.endsWith('/api/')) {
+        baseUrl = baseUrl.substring(0, baseUrl.length - 5);
+      }
+      return baseUrl + url;
     }
     return url;
   }

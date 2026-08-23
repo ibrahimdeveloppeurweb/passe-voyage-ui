@@ -85,28 +85,10 @@ export class AgentPerformancesComponent implements OnInit, OnDestroy {
           this.calculateTotals(list);
         },
         error: () => {
-          // Fallback to public endpoint if private route fails
-          this.api._get('public/agent/performances', params)
-            .pipe(takeUntil(this.unsubscribeAll$))
-            .subscribe({
-              next: (res: any) => {
-                this.isLoading = false;
-                let list: PerformanceItem[] = [];
-                if (Array.isArray(res)) list = res;
-                else if (res && res.data && Array.isArray(res.data)) list = res.data;
-                else if (res && res.performances && Array.isArray(res.performances)) list = res.performances;
-
-                this.rawPerformances = list;
-                this.performances = list;
-                this.calculateTotals(list);
-              },
-              error: () => {
-                this.isLoading = false;
-                this.rawPerformances = [];
-                this.performances = [];
-                this.calculateTotals([]);
-              }
-            });
+          this.isLoading = false;
+          this.rawPerformances = [];
+          this.performances = [];
+          this.calculateTotals([]);
         }
       });
   }

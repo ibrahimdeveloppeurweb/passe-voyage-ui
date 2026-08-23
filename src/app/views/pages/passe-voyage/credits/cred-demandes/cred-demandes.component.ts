@@ -238,8 +238,8 @@ export class CredDemandesComponent implements OnInit, OnDestroy {
       frais: frais,
       trajet: trajet,
       score: passenger?.creditScore || passenger?.riskScore || passenger?.score || 85,
-      dateVoyage: item.travelDate ? new Date(item.travelDate).toLocaleDateString('fr-FR') : '',
-      dateRetour: item.returnDate ? new Date(item.returnDate).toLocaleDateString('fr-FR') : null,
+      dateVoyage: this.formatLocalDate(item.travelDate),
+      dateRetour: this.formatLocalDate(item.returnDate),
       dateOnly: item.createdAt ? new Date(item.createdAt).toLocaleDateString('fr-FR') : '',
       timeOnly: item.createdAt ? new Date(item.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '',
       date: this.formatSubmissionDate(item.createdAt),
@@ -258,6 +258,20 @@ export class CredDemandesComponent implements OnInit, OnDestroy {
       return `${dateStr} à ${timeStr}`;
     } catch {
       return String(dateVal);
+    }
+  }
+
+  private formatLocalDate(dateStr: any): string {
+    if (!dateStr) return '';
+    try {
+      const str = String(dateStr);
+      const parts = str.split('T')[0].split('-');
+      if (parts.length === 3) {
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      }
+      return new Date(dateStr).toLocaleDateString('fr-FR');
+    } catch {
+      return '';
     }
   }
 

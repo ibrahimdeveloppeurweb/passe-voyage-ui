@@ -5,6 +5,7 @@ import { NgbCalendar, NgbDatepickerModule, NgbDateStruct, NgbDropdownModule } fr
 import { ApexOptions, NgApexchartsModule } from "ng-apexcharts";
 import { FeatherIconDirective } from '../../../../core/feather-icon/feather-icon.directive';
 import { ThemeCssVariableService, ThemeCssVariablesType } from '../../../../core/services/theme-css-variable.service';
+import { DashboardService } from '../../../../core/services/dashboard/dashboard.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -38,17 +39,19 @@ export class DashboardComponent implements OnInit {
   public cloudStorageChartOptions: ApexOptions | any;
 
   themeCssVariables = inject(ThemeCssVariableService).getThemeCssVariables();
+  dashboardService = inject(DashboardService);
 
-  dernieresDemandes = [ 
-    { passager: "Diallo Amadou", montant: 5000, statut: "Approuvé", temps: "Il y a 10 min" }, 
-    { passager: "Kouassi Marie", montant: 2000, statut: "En attente", temps: "Il y a 45 min" }, 
-    { passager: "Bamba Ali", montant: 10000, statut: "Rejeté", temps: "Il y a 2 heures" }, 
-  ]; 
-  derniersPaiements = [ 
-    { passager: "Kone Salif", montant: 3500, methode: "Mobile Money", temps: "Aujourdhui 08:30" }, 
-    { passager: "Sanogo Moussa", montant: 5000, methode: "Espèces", temps: "Aujourdhui 07:15" }, 
-    { passager: "Ouattara Fatou", montant: 2000, methode: "Mobile Money", temps: "Hier 18:40" }, 
-  ];
+  approvedAmount: number = 0;
+  overdueAmount: number = 0;
+  ticketsIssued: number = 0;
+
+  approvedPercentage: number = 0;
+  overduePercentage: number = 0;
+  ticketsPercentage: number = 0;
+
+  dernieresDemandes: any[] = [];
+  derniersPaiements: any[] = [];
+
   constructor() {}
 
   ngOnInit(): void {
@@ -58,9 +61,109 @@ export class DashboardComponent implements OnInit {
     this.revenueChartOptions = this.getRevenueChartOptions(this.themeCssVariables);
     this.monthlySalesChartOptions = this.getMonthlySalesChartOptions(this.themeCssVariables);
     this.cloudStorageChartOptions = this.getCloudStorageChartOptions(this.themeCssVariables);
+
+    this.loadDashboardData();
   }
 
+  onDateSelect(event: any) {
+    if (event && event.year && event.month && event.day) {
+      const dateStr = `${event.year}-${String(event.month).padStart(2, '0')}-${String(event.day).padStart(2, '0')}`;
+      this.loadDashboardData(dateStr);
+    }
+  }
 
+  loadDashboardData(date?: string) {
+    this.dashboardService.getPasseVoyageData(date).subscribe({
+      next: (res) => {
+        if (res && res.data) {
+          const data = res.data;
+          this.approvedAmount = data.approvedAmount || 0;
+          this.overdueAmount = data.overdueAmount || 0;
+          this.ticketsIssued = data.ticketsIssued || 0;
+          
+          this.approvedPercentage = data.approvedPercentage || 0;
+          this.overduePercentage = data.overduePercentage || 0;
+          this.ticketsPercentage = data.ticketsPercentage || 0;
+          
+          this.dernieresDemandes = (data.recentRequests || []).map((req: any) => {
+            return {
+              passager: req.passager,
+              montant: req.montant,
+              statut: this.translateStatus(req.statut),
+              temps: this.formatTimeAgo(req.temps)
+            };
+          });
+
+          this.derniersPaiements = (data.recentPayments || []).map((pay: any) => {
+            return {
+              passager: pay.passager,
+              montant: pay.montant,
+              methode: pay.methode,
+              temps: this.formatTimeAgo(pay.temps)
+            };
+          });
+
+          if (data.chartData) {
+            const categories = data.chartData.categories || [];
+            
+            // Crédits (customersChartOptions)
+            this.customersChartOptions = {
+              ...this.customersChartOptions,
+              series: [{ name: 'Crédits', data: data.chartData.credits || [] }],
+              xaxis: { ...this.customersChartOptions.xaxis, categories: categories }
+            };
+
+            // Créances (ordersChartOptions)
+            this.ordersChartOptions = {
+              ...this.ordersChartOptions,
+              series: [{ name: 'Créances en retard', data: data.chartData.overdue || [] }],
+              xaxis: { ...this.ordersChartOptions.xaxis, categories: categories }
+            };
+
+            // Billets (growthChartOptions)
+            this.growthChartOptions = {
+              ...this.growthChartOptions,
+              series: [{ name: 'Billets', data: data.chartData.tickets || [] }],
+              xaxis: { ...this.growthChartOptions.xaxis, categories: categories }
+            };
+          }
+        }
+      },
+      error: (err) => {
+        console.error('Erreur lors du chargement des données du tableau de bord', err);
+      }
+    });
+  }
+
+  translateStatus(status: string): string {
+    const s = (status || '').toUpperCase();
+    if (s === 'APPROVED') return 'Approuvé';
+    if (s === 'PENDING') return 'En attente';
+    if (s === 'PENDING_VALIDATION') return 'En attente de validation';
+    if (s === 'REJECTED') return 'Rejeté';
+    if (s === 'ACTIVE') return 'Actif';
+    return status;
+  }
+
+  formatTimeAgo(dateString: string): string {
+    if (!dateString) return '';
+    try {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffMs = now.getTime() - date.getTime();
+      const diffSecs = Math.floor(diffMs / 1000);
+      const diffMins = Math.floor(diffSecs / 60);
+      const diffHours = Math.floor(diffMins / 60);
+      const diffDays = Math.floor(diffHours / 24);
+
+      if (diffDays > 0) return `Il y a ${diffDays} jour(s)`;
+      if (diffHours > 0) return `Il y a ${diffHours} heure(s)`;
+      if (diffMins > 0) return `Il y a ${diffMins} min`;
+      return `À l'instant`;
+    } catch (e) {
+      return dateString;
+    }
+  }
 
   /**
    * Customerse chart options
@@ -68,8 +171,8 @@ export class DashboardComponent implements OnInit {
   getCustomersChartOptions(themeVariables: ThemeCssVariablesType) {
     return {
       series: [{
-        name: '',
-        data: [3844, 3855, 3841, 3867, 3822, 3843, 3821, 3841, 3856, 3827, 3843]
+        name: 'Crédits',
+        data: []
       }],
       chart: {
         type: "line",
@@ -80,8 +183,8 @@ export class DashboardComponent implements OnInit {
       },
       colors: [themeVariables.primary],
       xaxis: {
-        type: 'datetime',
-        categories: ["Jan 01 2024", "Jan 02 2024", "Jan 03 2024", "Jan 04 2024", "Jan 05 2024", "Jan 06 2024", "Jan 07 2024", "Jan 08 2024", "Jan 09 2024", "Jan 10 2024", "Jan 11 2024",],
+        type: 'category',
+        categories: [],
       },
       stroke: {
         width: 2,
@@ -101,8 +204,8 @@ export class DashboardComponent implements OnInit {
   getOrdersChartOptions(themeVariables: ThemeCssVariablesType) {
     return {
       series: [{
-        name: '',
-        data: [36, 77, 52, 90, 74, 35, 55, 23, 47, 10, 63]
+        name: 'Créances en retard',
+        data: []
       }],
       chart: {
         type: "bar",
@@ -119,8 +222,8 @@ export class DashboardComponent implements OnInit {
         }
       },
       xaxis: {
-        type: 'datetime',
-        categories: ["Jan 01 2024", "Jan 02 2024", "Jan 03 2024", "Jan 04 2024", "Jan 05 2024", "Jan 06 2024", "Jan 07 2024", "Jan 08 2024", "Jan 09 2024", "Jan 10 2024", "Jan 11 2024",],
+        type: 'category',
+        categories: [],
       }
     }
   };
@@ -133,8 +236,8 @@ export class DashboardComponent implements OnInit {
   getGrowthChartOptions(themeVariables: ThemeCssVariablesType) {
     return {
       series: [{
-        name: '',
-        data: [41, 45, 44, 46, 52, 54, 43, 74, 82, 82, 89]
+        name: 'Billets',
+        data: []
       }],
       chart: {
         type: "line",
@@ -145,8 +248,8 @@ export class DashboardComponent implements OnInit {
       },
       colors: [themeVariables.primary],
       xaxis: {
-        type: 'datetime',
-        categories: ["Jan 01 2024", "Jan 02 2024", "Jan 03 2024", "Jan 04 2024", "Jan 05 2024", "Jan 06 2024", "Jan 07 2024", "Jan 08 2024", "Jan 09 2024", "Jan 10 2024", "Jan 11 2024",],
+        type: 'category',
+        categories: [],
       },
       stroke: {
         width: 2,
