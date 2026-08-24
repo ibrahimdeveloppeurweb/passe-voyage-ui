@@ -283,6 +283,7 @@ export class AgentAnnuaireComponent implements OnInit, OnDestroy {
             ];
           }
 
+          list.sort((a: any, b: any) => (b.id || 0) - (a.id || 0));
           this.agents = list;
           this.allAgents = list;
         },
@@ -427,6 +428,21 @@ export class AgentAnnuaireComponent implements OnInit, OnDestroy {
     return '';
   }
 
+  formatLocalDate(dateStr: any): string {
+    if (!dateStr) return 'Non renseignée';
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return String(dateStr);
+      return d.toLocaleDateString('fr-FR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    } catch {
+      return String(dateStr);
+    }
+  }
+
   openCreateModal(content: TemplateRef<any>): void {
     this.newAgentForm = {
       firstname: '',
@@ -511,6 +527,7 @@ export class AgentAnnuaireComponent implements OnInit, OnDestroy {
   }
 
   openDetailModal(content: TemplateRef<any>, agent: AgentItem): void {
+    // Initialise avec toutes les données de la liste (inclut scansTotal)
     this.selectedAgent = { ...agent };
     const uuid = agent.uuid || String(agent.id);
 
@@ -520,7 +537,13 @@ export class AgentAnnuaireComponent implements OnInit, OnDestroy {
         .subscribe({
           next: (res: any) => {
             if (res) {
-              this.selectedAgent = res;
+              // Merge: les données de la liste priment pour scansTotal/scansToday
+              const showData = res.data || res;
+              this.selectedAgent = {
+                ...showData,
+                scansTotal: agent.scansTotal ?? showData.scansTotal ?? 0,
+                scansToday: agent.scansToday ?? showData.scansToday ?? 0,
+              };
             }
           }
         });
@@ -624,7 +647,23 @@ export class AgentAnnuaireComponent implements OnInit, OnDestroy {
     });
   }
 
+  isVerifiedAgent(agent: AgentItem | any): boolean {
+    if (!agent) return false;
+    const st = (agent.status || agent.statut || '').toUpperCase();
+    return (st === 'APPROVED' || st === 'VALIDATED' || st === 'VÉRIFIÉ' || st === 'VERIFIE' || st === 'ACTIF' || st === 'ACTIVE') || agent.isActivated === true;
+  }
+
   deleteAgent(agent: AgentItem): void {
+    if (this.isVerifiedAgent(agent)) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Suppression impossible',
+        text: 'Les comptes agents vérifiés et actifs ne peuvent pas être supprimés.',
+        confirmButtonColor: '#0d6efd'
+      });
+      return;
+    }
+
     const uuid = agent.uuid || String(agent.id);
     if (!uuid) return;
 
@@ -645,10 +684,9 @@ export class AgentAnnuaireComponent implements OnInit, OnDestroy {
               Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Agent supprimé avec succès.', timer: 3000 });
               this.loadAgents();
             },
-            error: () => {
-              this.allAgents = this.allAgents.filter(a => a !== agent);
-              this.agents = this.agents.filter(a => a !== agent);
-              Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Agent supprimé avec succès.', timer: 3000 });
+            error: (err: any) => {
+              const msg = err?.error?.message || err?.message || 'Erreur lors de la suppression de l\'agent.';
+              Swal.fire({ icon: 'error', title: 'Erreur', text: msg });
             }
           });
       }

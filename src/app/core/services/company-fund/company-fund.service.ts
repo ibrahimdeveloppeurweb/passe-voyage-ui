@@ -23,6 +23,19 @@ export interface CompanyFundItem {
   company?: any;
 }
 
+export interface CompanyFundHistoryItem {
+  id?: number;
+  uuid?: string;
+  type?: string; // RECHARGE or DEBIT_BILLET
+  amount?: number;
+  previousBalance?: number;
+  newBalance?: number;
+  reference?: string;
+  description?: string;
+  performedBy?: string;
+  createdAt?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -43,6 +56,18 @@ export class CompanyFundService {
     );
   }
 
+  getShow(uuid: string): Observable<any> {
+    if (!navigator.onLine) {
+      NoInternetHelper.internet();
+      return new Observable(obs => { obs.next(); obs.complete(); });
+    }
+
+    return this.api._get(`${this.url}/${uuid}/show`).pipe(
+      map((response: any) => response),
+      catchError((error: any) => throwError(() => error))
+    );
+  }
+
   create(data: any): Observable<any> {
     if (!navigator.onLine) {
       NoInternetHelper.internet();
@@ -50,6 +75,30 @@ export class CompanyFundService {
     }
 
     return this.api._post(`${this.url}/new`, data).pipe(
+      map((response: any) => response),
+      catchError((error: any) => throwError(() => error))
+    );
+  }
+
+  recharge(uuid: string, data: { amount: number; reason?: string; comment?: string; performedBy?: string }): Observable<any> {
+    if (!navigator.onLine) {
+      NoInternetHelper.internet();
+      return new Observable(obs => { obs.next(); obs.complete(); });
+    }
+
+    return this.api._post(`${this.url}/${uuid}/recharge`, data).pipe(
+      map((response: any) => response),
+      catchError((error: any) => throwError(() => error))
+    );
+  }
+
+  getHistory(uuid: string, params?: any): Observable<any> {
+    if (!navigator.onLine) {
+      NoInternetHelper.internet();
+      return new Observable(obs => { obs.next(); obs.complete(); });
+    }
+
+    return this.api._get(`${this.url}/${uuid}/history`, params).pipe(
       map((response: any) => response),
       catchError((error: any) => throwError(() => error))
     );

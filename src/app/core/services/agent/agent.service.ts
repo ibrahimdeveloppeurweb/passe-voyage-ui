@@ -35,6 +35,11 @@ export interface AgentItem {
   heureDebut?: string;
   heureFin?: string;
   date?: string;
+  scansToday?: number;
+  scansTotal?: number;
+  validationsCount?: number;
+  isActive?: boolean;
+  [key: string]: any;
 }
 
 @Injectable({

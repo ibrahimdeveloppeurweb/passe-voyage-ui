@@ -4,13 +4,9 @@
     <p class="text-secondary fs-13px mb-0">Gestion, affectation et suivi opérationnel de l'ensemble des agents de gare.</p>
   </div>
   <div class="d-flex align-items-center flex-wrap text-nowrap mt-2 mt-md-0">
-    <button type="button" class="btn btn-outline-primary btn-icon-text me-2" (click)="toggleAdvancedFilters()">
+    <button type="button" class="btn btn-outline-primary btn-icon-text" (click)="toggleAdvancedFilters()">
       <i class="feather icon-filter me-1"></i>
       {{ showAdvancedFilters ? 'Masquer Filtres' : 'Filtres Avancés' }}
-    </button>
-    <button type="button" class="btn btn-primary btn-icon-text" (click)="openCreateModal(createModal)">
-      <i class="feather icon-plus me-1"></i>
-      Nouvel Agent
     </button>
   </div>
 </div>
@@ -145,6 +141,7 @@
                 <th class="text-uppercase fs-12px fw-bold text-secondary">Nom & Prénom</th>
                 <th class="text-uppercase fs-12px fw-bold text-secondary">Téléphone</th>
                 <th class="text-uppercase fs-12px fw-bold text-secondary">Compagnie / Gare</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary text-center">Billets Scannés</th>
                 <th class="text-uppercase fs-12px fw-bold text-secondary text-center">Statut</th>
                 <th class="text-uppercase fs-12px fw-bold text-secondary text-end me-2">Actions</th>
               </tr>
@@ -180,6 +177,12 @@
                   </ng-template>
                 </td>
                 <td class="text-center">
+                  <span class="badge rounded-pill bg-light text-dark border fw-bold px-3 py-1"
+                        [ngClass]="{'text-success border-success': (agent.scansTotal || 0) > 0}">
+                    {{ agent.scansTotal || 0 }}
+                  </span>
+                </td>
+                <td class="text-center">
                   <span class="badge px-3 py-2 rounded-2 fs-12px fw-medium" [ngClass]="getAgentStatusBadge(agent).bgClass">
                     {{ getAgentStatusBadge(agent).label }}
                   </span>
@@ -205,8 +208,12 @@
                     <button class="btn btn-sm btn-outline-secondary btn-icon" (click)="openDetailModal(detailModal, agent)" title="Voir la fiche complète">
                       <i class="feather icon-eye"></i>
                     </button>
-                    <!-- Supprimer -->
-                    <button class="btn btn-sm btn-outline-danger btn-icon" (click)="deleteAgent(agent)" title="Supprimer cet agent">
+                    <!-- Supprimer (Désactivé pour les comptes vérifiés) -->
+                    <button class="btn btn-sm btn-icon" 
+                            [ngClass]="isVerifiedAgent(agent) ? 'btn-outline-secondary opacity-50' : 'btn-outline-danger'" 
+                            [disabled]="isVerifiedAgent(agent)" 
+                            (click)="deleteAgent(agent)" 
+                            [title]="isVerifiedAgent(agent) ? 'Impossible de supprimer un compte agent vérifié' : 'Supprimer cet agent'">
                       <i class="feather icon-trash-2"></i>
                     </button>
                   </div>
@@ -404,8 +411,19 @@
           <p class="mb-1 fs-13px" *ngIf="getAgentCodeCommercial(selectedAgent)"><strong>Code Commercial :</strong> <span class="badge bg-primary px-2 py-1 fs-12px ms-1">{{ getAgentCodeCommercial(selectedAgent) }}</span></p>
           <p class="mb-1 fs-13px"><strong>Compagnie :</strong> {{ getAgentCompanyName(selectedAgent) || '-' }}</p>
           <p class="mb-1 fs-13px"><strong>Gare assignée :</strong> {{ getAgentStationName(selectedAgent) || '-' }}</p>
-          <p class="mb-1 fs-13px"><strong>Date création :</strong> {{ selectedAgent.createdAt || '01/08/2026' }}</p>
-          <p class="mb-0 fs-13px"><strong>Scans aujourd'hui :</strong> <span class="badge bg-primary">12 billets</span></p>
+          <p class="mb-1 fs-13px" *ngIf="selectedAgent.shiftStart || selectedAgent.shiftEnd">
+            <strong>Horaires de service :</strong> 
+            <span class="badge bg-light text-dark border px-2 py-1 fs-12px ms-1">
+              <i class="feather icon-clock text-primary me-1"></i>{{ selectedAgent.shiftStart || '08:00' }} - {{ selectedAgent.shiftEnd || '17:00' }}
+            </span>
+          </p>
+          <p class="mb-1 fs-13px"><strong>Date création :</strong> {{ formatLocalDate(selectedAgent.createdAt) }}</p>
+          <p class="mb-0 fs-13px">
+            <strong>Total billets scannés :</strong>
+            <span class="badge bg-success px-2 py-1 fs-12px ms-1">
+              {{ (selectedAgent.scansTotal !== undefined ? selectedAgent.scansTotal : 0) }} billet(s)
+            </span>
+          </p>
         </div>
       </div>
     </div>
