@@ -49,6 +49,10 @@ export const routes: Routes = [
       {
         path: 'general',
         loadChildren: () => import('./views/pages/general/general.routes')
+      },
+      {
+        path: 'espace-compagnie',
+        loadChildren: () => import('./views/pages/passe-voyage/espace-compagnie/espace-compagnie.routes').then(m => m.espaceCompagnieRoutes)
       }
     ]
   },

@@ -103,13 +103,26 @@
         <input type="email" class="form-control" [(ngModel)]="userForm.email" placeholder="jean@passevoyage.ci">
       </div>
 
-      <div class="col-md-6">
+      <div class="col-md-6" [ngClass]="{'col-md-12': isCompanyRole()}">
         <label class="form-label fw-bold">Rôle <span class="text-danger">*</span></label>
         <select class="form-select" [(ngModel)]="userForm.roleUuid">
           <option *ngFor="let role of roles" [value]="role.uuid || role.nom">
             {{ role.nom }}
           </option>
         </select>
+      </div>
+
+      <div class="col-md-12" *ngIf="isCompanyRole()">
+        <label class="form-label fw-bold">Compagnie Partenaire <span class="text-danger">*</span></label>
+        <select class="form-select border-primary" [(ngModel)]="userForm.companyUuid">
+          <option value="">-- Sélectionner la compagnie d'affectation --</option>
+          <option *ngFor="let comp of companies" [value]="comp.uuid">
+            {{ comp.name || comp.nom }}
+          </option>
+        </select>
+        <small class="text-primary mt-1 d-block fs-11px">
+          <i class="feather icon-info"></i> Cet utilisateur aura un accès restreint aux données de cette compagnie uniquement.
+        </small>
       </div>
 
       <div class="col-md-6">

@@ -158,6 +158,7 @@
                 <th class="text-uppercase fs-12px fw-bold text-secondary">Téléphone</th>
                 <th class="text-uppercase fs-12px fw-bold text-secondary">Date Inscription</th>
                 <th class="text-uppercase fs-12px fw-bold text-secondary text-end">Solde Crédit (XOF)</th>
+                <th class="text-uppercase fs-12px fw-bold text-secondary text-end">Wallet Frais (XOF)</th>
                 <th class="text-uppercase fs-12px fw-bold text-secondary text-center">Statut</th>
                 <th class="text-uppercase fs-12px fw-bold text-secondary text-end me-2">Actions</th>
               </tr>
@@ -175,6 +176,9 @@
                 </td>
                 <td class="text-end fw-bold fs-14px" [ngClass]="{'text-primary': (pass.totalDebt ?? pass.solde ?? 0) > 0, 'text-dark': (pass.totalDebt ?? pass.solde ?? 0) == 0}">
                   {{ (pass.totalDebt ?? pass.solde ?? 0) | number:'1.0-0' }}
+                </td>
+                <td class="text-end fw-bold fs-13px text-info">
+                  {{ (pass.serviceFeeWallet ?? 0) | number:'1.0-0' }}
                 </td>
                 <td class="text-center">
                   <span class="badge px-3 py-2 rounded-2 fs-12px fw-medium" [ngClass]="getPassengerStatusInfo(pass).bgClass">
@@ -317,6 +321,10 @@
             <strong class="text-dark">{{ selectedPassager.residenceAddress || 'Non renseignée' }}</strong>
           </div>
           <div class="col-6">
+            <span class="text-muted d-block small">Contact Aval :</span>
+            <strong class="text-primary fw-bold">{{ selectedPassager.avalPhone || 'Non renseigné' }}</strong>
+          </div>
+          <div class="col-6">
             <span class="text-muted d-block small">Date d'inscription :</span>
             <strong class="text-dark">{{ getInscriptionDate(selectedPassager) }}</strong>
           </div>
@@ -329,6 +337,10 @@
           <div class="col-6">
             <span class="text-muted d-block small">Solde Disponible :</span>
             <strong class="fs-15px text-success">{{ (selectedPassager.availableCredit ?? selectedPassager.solde ?? 0) | number:'1.0-0' }} XOF</strong>
+          </div>
+          <div class="col-6">
+            <span class="text-muted d-block small">Wallet Frais Garantie :</span>
+            <strong class="fs-15px text-info">{{ (selectedPassager.serviceFeeWallet ?? 0) | number:'1.0-0' }} XOF</strong>
           </div>
           <div class="col-6">
             <span class="text-muted d-block small">Plafond Autorisé :</span>

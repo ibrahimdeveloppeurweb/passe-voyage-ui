@@ -237,13 +237,15 @@ export class CredDemandesComponent implements OnInit, OnDestroy {
       montant: total,
       frais: frais,
       trajet: trajet,
-      score: passenger?.creditScore || passenger?.riskScore || passenger?.score || 85,
+      score: passenger?.consecutiveGoodRepayments ?? 0,
+      profileType: passenger?.profileType ?? 'NEW_USER',
       dateVoyage: this.formatLocalDate(item.travelDate),
       dateRetour: this.formatLocalDate(item.returnDate),
       dateOnly: item.createdAt ? new Date(item.createdAt).toLocaleDateString('fr-FR') : '',
       timeOnly: item.createdAt ? new Date(item.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '',
       date: this.formatSubmissionDate(item.createdAt),
       statut: statutStr,
+      repaymentDueDate: this.formatLocalDate(item.repaymentDueDate),
       tickets: ticketsList
     };
   }
@@ -337,7 +339,7 @@ export class CredDemandesComponent implements OnInit, OnDestroy {
           <p><strong>Montant Crédit Voyage :</strong> <span style="color: #2563eb; font-weight: bold;">${Number(demande.creditTransport).toLocaleString('fr-FR')} FCFA</span></p>
           <p><strong>Frais au Comptant :</strong> <span style="color: #16a34a; font-weight: bold;">${Number(demande.frais).toLocaleString('fr-FR')} FCFA</span></p>
           <p><strong>Total Billet Voyage :</strong> ${Number(demande.montant).toLocaleString('fr-FR')} FCFA</p>
-          <p><strong>Score Risque Client :</strong> <span class="badge bg-success">${demande.score} / 100</span></p>
+          <p><strong>Score Risque Client :</strong> <span class="badge bg-primary">${demande.profileType}</span> (${demande.score} remb. réussi(s))</p>
           <p><strong>Statut Actuel :</strong> <span class="badge bg-info">${demande.statut}</span></p>
           ${ticketsHtml}
         </div>

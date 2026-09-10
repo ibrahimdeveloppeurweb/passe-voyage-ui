@@ -220,7 +220,10 @@
             </div>
             <div class="text-center">
               <p class="tx-16 fw-bolder">{{ userName }}</p>
-              <p class="fs-12px text-secondary">{{ userEmail }}</p>
+              <p class="fs-12px text-secondary mb-1">{{ userEmail }}</p>
+              @if(userCompany) {
+              <span class="badge bg-primary mt-1 fw-bold fs-11px">{{ userCompany }}</span>
+              }
             </div>
           </div>
           <ul class="list-unstyled p-1">

@@ -157,17 +157,24 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
       'TICKET': { id: 'TICKET', name: 'Billets & Réservations', checked: false, actions: [] },
       'PAYMENT': { id: 'PAYMENT', name: 'Recouvrements & Paiements', checked: false, actions: [] },
       'PASSENGER': { id: 'PASSENGER', name: 'Passagers & Profils', checked: false, actions: [] },
-      'COMPANY': { id: 'COMPANY', name: 'Compagnies & Gares', checked: false, actions: [] },
+      'COMPANY': { id: 'COMPANY', name: 'Partenaires & Gares', checked: false, actions: [] },
       'AGENT': { id: 'AGENT', name: 'Agents Terrain', checked: false, actions: [] },
       'SETTING': { id: 'SETTING', name: 'Configuration Système', checked: false, actions: [] },
+      'PORTAIL_COMPAGNIE': { id: 'PORTAIL_COMPAGNIE', name: 'Espace Compagnie (Portail)', checked: false, actions: [] },
       'OTHER': { id: 'OTHER', name: 'Autres & Administration', checked: false, actions: [] }
     };
 
     rawPaths.forEach(path => {
       const uuid = path.uuid || `path-${path.id}`;
       const perm = path.permission || path.nom || '';
-      const parts = perm.split(':');
-      const modKey = parts[0] ? parts[0].toUpperCase() : 'OTHER';
+      
+      let modKey = 'OTHER';
+      if (perm.includes('MENU_COMPAGNIE') || perm.includes('COMPAGNIE_PORTAIL')) {
+        modKey = 'PORTAIL_COMPAGNIE';
+      } else {
+        const parts = perm.split(':');
+        modKey = parts[0] ? parts[0].toUpperCase() : 'OTHER';
+      }
 
       const isChecked: boolean = Boolean(
         assignedKeys.includes(uuid) ||
@@ -197,7 +204,22 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
     });
   }
 
+  isModuleDisabled(modId: string): boolean {
+    const hasCompany = this.groupedModules.find(m => m.id === 'PORTAIL_COMPAGNIE')?.actions.some(a => a.checked);
+    const hasOther = this.groupedModules.filter(m => m.id !== 'PORTAIL_COMPAGNIE').some(m => m.actions.some(a => a.checked));
+
+    if (modId === 'PORTAIL_COMPAGNIE') {
+      return !!hasOther;
+    } else {
+      return !!hasCompany;
+    }
+  }
+
   toggleModuleAll(module: GroupedModule, event: Event): void {
+    if (this.isModuleDisabled(module.id)) {
+      event.preventDefault();
+      return;
+    }
     const isChecked = (event.target as HTMLInputElement).checked;
     module.checked = isChecked;
     module.actions.forEach(action => action.checked = isChecked);
@@ -325,7 +347,12 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
       { id: 14, uuid: 'p-agent-read', nom: 'AGENT:READ', libelle: 'Consulter les agents terrain', permission: 'AGENT:READ' },
       { id: 15, uuid: 'p-agent-edit', nom: 'AGENT:EDIT', libelle: 'Créer / Modifier un agent', permission: 'AGENT:EDIT' },
       { id: 16, uuid: 'p-setting-read', nom: 'SETTING:READ', libelle: 'Consulter la configuration globale', permission: 'SETTING:READ' },
-      { id: 17, uuid: 'p-setting-edit', nom: 'SETTING:EDIT', libelle: 'Modifier les paramètres généraux', permission: 'SETTING:EDIT' }
+      { id: 16, uuid: 'p-setting-read', nom: 'SETTING:READ', libelle: 'Consulter la configuration globale', permission: 'SETTING:READ' },
+      { id: 17, uuid: 'p-setting-edit', nom: 'SETTING:EDIT', libelle: 'Modifier les paramètres généraux', permission: 'SETTING:EDIT' },
+      { id: 100, uuid: 'p-compagnie-dash', nom: 'MENU_COMPAGNIE_DASHBOARD', libelle: 'Mon Tableau de bord (Compagnie)', permission: 'MENU_COMPAGNIE_DASHBOARD' },
+      { id: 101, uuid: 'p-compagnie-act', nom: 'MENU_COMPAGNIE_ACTIVITES_GARES', libelle: 'Activités & Gares', permission: 'MENU_COMPAGNIE_ACTIVITES_GARES' },
+      { id: 102, uuid: 'p-compagnie-billets', nom: 'MENU_COMPAGNIE_BILLETS_SCANNES', libelle: 'Billets Scannés', permission: 'MENU_COMPAGNIE_BILLETS_SCANNES' },
+      { id: 103, uuid: 'p-compagnie-finances', nom: 'MENU_COMPAGNIE_FINANCES', libelle: 'Solde & Finances', permission: 'MENU_COMPAGNIE_FINANCES' }
     ];
   }
 

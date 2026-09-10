@@ -1,0 +1,142 @@
+<div class="d-flex justify-content-between align-items-center flex-wrap grid-margin mb-3">
+  <div>
+    <h4 class="mb-1 fw-bold text-dark">Billets Scannés (Validation)</h4>
+    <p class="text-secondary fs-13px mb-0">Registre complet des pass virtuels validés par vos contrôleurs aux guichets.</p>
+  </div>
+  <div class="d-flex align-items-center flex-wrap text-nowrap mt-2 mt-md-0">
+    <button type="button" class="btn btn-outline-primary btn-icon-text me-2" (click)="toggleAdvancedFilters()">
+      <i class="feather icon-filter me-1"></i> {{ showAdvancedFilters ? 'Masquer Filtres' : 'Filtres Avancés' }}
+    </button>
+    <button type="button" class="btn btn-primary btn-icon-text">
+      <i class="feather icon-download me-1"></i> Exporter
+    </button>
+  </div>
+</div>
+
+<!-- Filtres Avancés -->
+<div class="row mb-3" *ngIf="showAdvancedFilters">
+  <div class="col-md-12">
+    <div class="card border shadow-sm">
+      <div class="card-body">
+        <h6 class="card-title mb-3 fw-bold text-uppercase fs-12px text-secondary">Filtres de recherche</h6>
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label fs-12px text-secondary mb-1">Recherche globale</label>
+            <input type="text" class="form-control form-control-sm" placeholder="N° Billet, Passager, Agent..." [(ngModel)]="searchTerm" (keyup.enter)="applyFilters()">
+          </div>
+
+          <div class="col-md-2">
+            <label class="form-label fs-12px text-secondary mb-1">Gare / Terminal</label>
+            <select class="form-select form-select-sm" [(ngModel)]="advStationFilter" (change)="applyFilters()">
+              <option value="">Toutes les gares</option>
+              <option *ngFor="let st of stationsList" [value]="st">{{ st }}</option>
+            </select>
+          </div>
+
+          <div class="col-md-2">
+            <label class="form-label fs-12px text-secondary mb-1">Date début</label>
+            <input type="date" class="form-control form-control-sm" [(ngModel)]="startDate" (change)="applyFilters()">
+          </div>
+
+          <div class="col-md-2">
+            <label class="form-label fs-12px text-secondary mb-1">Date fin</label>
+            <input type="date" class="form-control form-control-sm" [(ngModel)]="endDate" (change)="applyFilters()">
+          </div>
+
+          <div class="col-md-3 d-flex align-items-end ms-auto">
+            <button class="btn btn-sm btn-primary me-2 w-50" (click)="applyFilters()">
+              <i class="feather icon-filter me-1"></i> Filtrer
+            </button>
+            <button class="btn btn-sm btn-outline-secondary w-50" (click)="resetFilters()">
+              <i class="feather icon-refresh-cw me-1"></i> Réinitialiser
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-12 grid-margin stretch-card">
+    <div class="card shadow-sm border-0">
+      <div class="card-body">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h5 class="card-title fw-bold mb-0">Historique des Validations</h5>
+          <div class="d-flex gap-2">
+            <select class="form-select form-select-sm" (change)="onPageSizeChange($event)">
+              <option value="10" [selected]="pageSize === 10">10 par page</option>
+              <option value="50" [selected]="pageSize === 50">50 par page</option>
+              <option value="-1" [selected]="pageSize === -1">Tout afficher</option>
+            </select>
+            <div class="input-group" style="width: 300px;">
+              <input type="text" class="form-control form-control-sm" placeholder="Rechercher (Ex: PASS-V-12...)" [(ngModel)]="searchTerm" (keyup.enter)="applyFilters()">
+              <button class="btn btn-outline-secondary btn-sm" type="button" (click)="applyFilters()"><i class="feather icon-search"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-center py-5" *ngIf="loading">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Chargement...</span>
+          </div>
+        </div>
+
+        <div class="table-responsive" *ngIf="!loading">
+          <table class="table table-hover mb-0">
+            <!-- (table content is left intact above internally) -->
+            <thead>
+              <tr>
+                <th>N° BILLET</th>
+                <th>PASSAGER</th>
+                <th>TRAJET</th>
+                <th>GARE & AGENT</th>
+                <th>DATE DE SCAN</th>
+                <th>RÉMUNÉRATION</th>
+                <th>STATUT</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let ticket of scannedTickets">
+                <td><strong class="text-dark">{{ ticket.num }}</strong></td>
+                <td><span class="fs-13px">{{ ticket.passenger }}</span></td>
+                <td><span class="text-secondary fs-13px">{{ ticket.trajectory }}</span></td>
+                <td>
+                  <div class="fs-13px fw-bold text-dark"><i class="feather icon-map-pin text-primary me-1"></i>{{ ticket.station }}</div>
+                  <small class="text-muted"><i class="feather icon-user me-1"></i>{{ ticket.agent }}</small>
+                </td>
+                <td><span class="fs-12px">{{ ticket.time }}</span></td>
+                <td><span class="fw-bold fs-13px" [ngClass]="{'text-success': ticket.status === 'Scanné', 'text-muted': ticket.status !== 'Scanné'}">{{ ticket.amount }}</span></td>
+                <td>
+                  <span class="badge w-100" [ngClass]="{'bg-info': ticket.status === 'Scanné', 'bg-danger': ticket.status !== 'Scanné'}">
+                    {{ ticket.status | uppercase }}
+                  </span>
+                </td>
+              </tr>
+              <tr *ngIf="scannedTickets.length === 0">
+                <td colspan="7" class="text-center text-muted py-4">Aucun billet trouvé avec vos critères de recherche.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mt-3" *ngIf="!loading && totalItems > 0 && pageSize > 0">
+          <small class="text-muted">Affichage {{ (currentPage - 1) * pageSize + 1 }} à {{ Math.min(currentPage * pageSize, totalItems) }} sur {{ totalItems }} enregistrements</small>
+          <nav aria-label="Page navigation">
+            <ul class="pagination pagination-sm mb-0">
+              <li class="page-item" [class.disabled]="currentPage === 1">
+                <a class="page-link" href="javascript:void(0)" (click)="onPageChange(currentPage - 1)">Précédent</a>
+              </li>
+              <li class="page-item disabled"><a class="page-link">{{ currentPage }} / {{ Math.ceil(totalItems / pageSize) }}</a></li>
+              <li class="page-item" [class.disabled]="currentPage === Math.ceil(totalItems / pageSize)">
+                <a class="page-link" href="javascript:void(0)" (click)="onPageChange(currentPage + 1)">Suivant</a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

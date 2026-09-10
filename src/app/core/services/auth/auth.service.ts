@@ -87,6 +87,10 @@ export class AuthService {
         return this.getDataToken()?.role ?? null;
     }
 
+    getCompanyName(): string | null {
+        return (this.getDataToken() as any)?.companyName ?? null;
+    }
+
     getPermissions(): string[] {
         const raw = localStorage.getItem(PERMS_KEY);
         return raw ? JSON.parse(raw) : [];

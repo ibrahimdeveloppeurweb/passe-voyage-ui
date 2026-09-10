@@ -98,4 +98,8 @@ export class NavbarComponent implements OnInit {
     return this.currentUser?.photo ?? 'https://placehold.co/30x30';
   }
 
+  get userCompany(): string | null {
+    return this.authService.getCompanyName();
+  }
+
 }

@@ -7,6 +7,7 @@ export interface GeneralSetting {
   id?: number;
   fraisServiceTicket?: number;
   delaiOptionStandard?: number;
+  dureeExpirationBillet?: number;
   reserveFinanciereInitiale?: string;
   cleApiSmsNotification?: string;
   fraisDossier?: number;

@@ -97,7 +97,7 @@
 
     <div class="row g-4">
       <div *ngFor="let mod of groupedModules" class="col-md-6">
-        <div class="card border h-100 shadow-xs">
+        <div class="card border h-100 shadow-xs transition-opacity" [ngClass]="{'opacity-50 bg-light': isModuleDisabled(mod.id)}">
           <div class="card-header bg-light d-flex justify-content-between align-items-center py-2 px-3">
             <div class="d-flex align-items-center">
               <i class="feather icon-folder text-primary me-2"></i>
@@ -106,7 +106,7 @@
                 {{ mod.actions.length }} droit(s)
               </span>
             </div>
-            <div class="form-check form-switch m-0">
+            <div class="form-check form-switch m-0" *ngIf="!isModuleDisabled(mod.id)">
               <input type="checkbox" class="form-check-input cursor-pointer"
                      [id]="'selectAll_' + mod.id"
                      [checked]="mod.checked"
@@ -115,18 +115,23 @@
                 Tout cocher
               </label>
             </div>
+            <div class="m-0" *ngIf="isModuleDisabled(mod.id)">
+              <span class="badge bg-secondary fs-10px">Incompatible</span>
+            </div>
           </div>
           <div class="card-body py-3">
             <div class="row g-2">
               <div *ngFor="let action of mod.actions" class="col-12">
-                <div class="p-2 border rounded d-flex align-items-center bg-white">
+                <div class="p-2 border rounded d-flex align-items-center" [ngClass]="isModuleDisabled(mod.id) ? 'bg-transparent' : 'bg-white'">
                   <div class="form-check m-0 d-flex align-items-center w-100">
                     <input type="checkbox" 
-                           class="form-check-input me-2 border-primary cursor-pointer mt-0" 
+                           class="form-check-input me-2 border-primary mt-0" 
+                           [class.cursor-pointer]="!isModuleDisabled(mod.id)"
                            [(ngModel)]="action.checked" 
+                           [disabled]="isModuleDisabled(mod.id)"
                            (change)="updateModuleCheckedStatus(mod)"
                            [id]="'check_' + action.uuid">
-                    <label class="form-check-label fs-13px cursor-pointer w-100" [for]="'check_' + action.uuid">
+                    <label class="form-check-label fs-13px w-100" [class.cursor-pointer]="!isModuleDisabled(mod.id)" [for]="'check_' + action.uuid">
                       <span class="fw-medium text-dark">{{ action.name }}</span>
                       <small class="text-muted d-block font-monospace fs-11px" *ngIf="action.permission">
                         {{ action.permission }}

@@ -5,6 +5,7 @@ import { TicketService } from '../../../../../core/services/ticket/ticket.servic
 import { CompanyService } from '../../../../../core/services/company/company.service';
 import Swal from 'sweetalert2';
 import { Subject, takeUntil } from 'rxjs';
+import { environment } from '../../../../../../environments/environment';
 
 @Component({
   selector: 'app-cred-billets',
@@ -22,15 +23,26 @@ export class CredBilletsComponent implements OnInit, OnDestroy {
   advCompanyFilter: string = '';
 
   billets: any[] = [];
-  filteredBillets: any[] = [];
   companiesList: string[] = [];
+
+  currentPage: number = 1;
+  pageSize: number = 10;
+  serverTotalItems: number = 0;
+  
+  kpis = {
+    total: 0,
+    valides: 0,
+    consommes: 0,
+    refuses: 0,
+    annules: 0
+  };
 
   private unsubscribeAll$ = new Subject<void>();
 
   constructor(
     private ticketService: TicketService,
     private companyService: CompanyService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadCompanies();
@@ -83,17 +95,27 @@ export class CredBilletsComponent implements OnInit, OnDestroy {
     if (this.advCompanyFilter && this.advCompanyFilter.trim() !== '') {
       params.company = this.advCompanyFilter.trim();
     }
+    
+    // Server-side pagination
+    params.page = this.currentPage;
+    params.limit = this.pageSize;
 
     this.ticketService.getList(params)
       .pipe(takeUntil(this.unsubscribeAll$))
       .subscribe({
         next: (response: any) => {
           this.loading = false;
-          const data = response?.data || response?.tickets || response;
-          if (Array.isArray(data)) {
-            this.billets = data;
+          const data = response?.data || response?.tickets || [];
+          this.billets = Array.isArray(data) ? data : [];
+          
+          if (response?.meta) {
+              this.serverTotalItems = response.meta.total || 0;
           } else {
-            this.billets = [];
+              this.serverTotalItems = this.billets.length;
+          }
+          
+          if (response?.kpis) {
+              this.kpis = response.kpis;
           }
 
           if (this.companiesList.length === 0) {
@@ -105,19 +127,17 @@ export class CredBilletsComponent implements OnInit, OnDestroy {
             });
             this.companiesList = Array.from(comps);
           }
-
-          this.filterBillets();
         },
         error: (err: any) => {
           this.loading = false;
           console.error('Erreur lors de la récupération des billets:', err);
           this.billets = [];
-          this.filterBillets();
         }
       });
   }
 
   applyAdvancedFilters(): void {
+    this.currentPage = 1;
     this.loadBillets();
   }
 
@@ -125,73 +145,57 @@ export class CredBilletsComponent implements OnInit, OnDestroy {
     this.searchTerm = '';
     this.advStatusFilter = '';
     this.advCompanyFilter = '';
+    this.currentPage = 1;
     this.loadBillets();
   }
 
-  filterBillets(): void {
-    let result = [...this.billets];
+  get paginatedBillets(): any[] {
+    return this.billets;
+  }
 
-    if (this.searchTerm && this.searchTerm.trim() !== '') {
-      const term = this.searchTerm.toLowerCase().trim();
-      result = result.filter(b => 
-        (b.num && b.num.toLowerCase().includes(term)) ||
-        (b.passager && b.passager.toLowerCase().includes(term)) ||
-        (b.compagnie && b.compagnie.toLowerCase().includes(term)) ||
-        (b.trajet && b.trajet.toLowerCase().includes(term)) ||
-        (b.dateValidite && b.dateValidite.toLowerCase().includes(term)) ||
-        (b.qrStatus && b.qrStatus.toLowerCase().includes(term))
-      );
+  get totalPages(): number {
+    if (this.pageSize === 0) return 1;
+    return Math.ceil(this.serverTotalItems / this.pageSize) || 1;
+  }
+
+  getPages(): number[] {
+    const pages = [];
+    for (let i = 1; i <= this.totalPages; i++) {
+      pages.push(i);
     }
+    return pages;
+  }
 
-    if (this.advStatusFilter && this.advStatusFilter.trim() !== '') {
-      const sf = this.advStatusFilter.toLowerCase().trim();
-      result = result.filter(b => (b.qrStatus && b.qrStatus.toLowerCase().includes(sf)) || (b.status && b.status.toLowerCase().includes(sf)));
+  changePage(page: number): void {
+    if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
+      this.currentPage = page;
+      this.loadBillets();
     }
+  }
 
-    if (this.advCompanyFilter && this.advCompanyFilter.trim() !== '') {
-      result = result.filter(b => b.compagnie === this.advCompanyFilter);
-    }
-
-    this.filteredBillets = result;
+  onPageSizeChange(): void {
+    this.currentPage = 1;
+    this.loadBillets();
   }
 
   get countTotal(): number {
-    return this.filteredBillets.length;
+    return this.kpis.total;
   }
 
   get countValides(): number {
-    return this.filteredBillets.filter(b => {
-      const qrSt = (b.qrStatus || '').toUpperCase();
-      const st = (b.status || '').toUpperCase();
-      return qrSt === 'VALIDE' || qrSt === 'VALID' || st === 'VALIDE' || st === 'VALID';
-    }).length;
+    return this.kpis.valides;
   }
 
   get countConsommes(): number {
-    return this.filteredBillets.filter(b => {
-      const qrSt = (b.qrStatus || '').toUpperCase();
-      const st = (b.status || '').toUpperCase();
-      if (qrSt === 'REFUSÉ' || qrSt === 'REFUSE' || st === 'REFUSED' || st === 'REJECTED') {
-        return false;
-      }
-      return qrSt === 'SCANNÉ' || qrSt === 'SCANNE' || qrSt === 'SCANNED' || qrSt === 'CONSOMMÉ' || qrSt === 'CONSOMME' || st === 'SCANNE' || st === 'SCANNED' || st === 'USED' || st === 'CONSOMME' || b.isUsed === true;
-    }).length;
+    return this.kpis.consommes;
   }
 
   get countRefuses(): number {
-    return this.filteredBillets.filter(b => {
-      const qrSt = (b.qrStatus || '').toUpperCase();
-      const st = (b.status || '').toUpperCase();
-      return qrSt === 'REFUSÉ' || qrSt === 'REFUSE' || st === 'REFUSED' || st === 'REJECTED';
-    }).length;
+    return this.kpis.refuses;
   }
 
   get countAnnules(): number {
-    return this.filteredBillets.filter(b => {
-      const qrSt = (b.qrStatus || '').toUpperCase();
-      const st = (b.status || '').toUpperCase();
-      return qrSt === 'ANNULÉ' || qrSt === 'ANNULE' || qrSt === 'EXPIRÉ' || qrSt === 'EXPIRE' || st === 'ANNULE' || st === 'EXPIRE' || st === 'CANCELLED' || st === 'EXPIRED';
-    }).length;
+    return this.kpis.annules;
   }
 
   voirQrCode(billet: any): void {
@@ -209,12 +213,12 @@ export class CredBilletsComponent implements OnInit, OnDestroy {
 
     const isRefused = billet.qrStatus === 'Refusé' || billet.status === 'REFUSED';
     const badgeClass = billet.qrStatus === 'Valide' ? 'bg-success' : (isRefused ? 'bg-danger' : 'bg-secondary');
-    
-    const agentName = billet.validatedByAgentName || 
-      (billet.validatedByAgent ? (billet.validatedByAgent.displayName || `${billet.validatedByAgent.firstname || ''} ${billet.validatedByAgent.lastname || ''}`.trim()) : null) || 
+
+    const agentName = billet.validatedByAgentName ||
+      (billet.validatedByAgent ? (billet.validatedByAgent.displayName || `${billet.validatedByAgent.firstname || ''} ${billet.validatedByAgent.lastname || ''}`.trim()) : null) ||
       (billet.agent ? (billet.agent.displayName || `${billet.agent.firstname || ''} ${billet.agent.lastname || ''}`.trim()) : null);
 
-    const stationName = billet.validatedAtStationName || 
+    const stationName = billet.validatedAtStationName ||
       (billet.validatedAtStation ? billet.validatedAtStation.name : null) ||
       (billet.station ? billet.station.name : null);
 
@@ -240,8 +244,25 @@ export class CredBilletsComponent implements OnInit, OnDestroy {
              </div>
            ` : ''}
            ${billet.validatedAt ? `
-             <div style="color: #475569;">
+             <div style="margin-bottom: 4px; color: #475569;">
                <strong>Heure du scan :</strong> <span style="color: #0f172a; font-weight: 600;">${billet.validatedAt}</span>
+             </div>
+           ` : ''}
+           ${billet.verificationContact ? `
+             <div style="margin-bottom: 4px; color: #475569;">
+               <strong>Contact Passager :</strong> <span style="color: #10b981; font-weight: 700;">${billet.verificationContact} <i class="feather icon-check-circle" style="font-size:12px;"></i></span>
+             </div>
+           ` : ''}
+           ${billet.passengerPhoto ? `
+             <div style="margin-top: 8px; text-align: center;">
+               <a href="${billet.passengerPhoto.startsWith('http') ? billet.passengerPhoto : environment.serverUrlPiture + billet.passengerPhoto}" target="_blank" title="Cliquez pour agrandir">
+                 <img src="${billet.passengerPhoto.startsWith('http') ? billet.passengerPhoto : environment.serverUrlPiture + billet.passengerPhoto}" 
+                      style="width: 90px; height: 90px; object-fit: cover; border-radius: 8px; border: 2px solid #e2e8f0; cursor: pointer; transition: transform 0.2s;" 
+                      alt="Photo Passager"
+                      onmouseover="this.style.transform='scale(1.05)'"
+                      onmouseout="this.style.transform='scale(1)'"/>
+               </a>
+               <div style="font-size: 10px; color: #64748b; margin-top: 4px;">Cliquez sur la photo pour l'agrandir</div>
              </div>
            ` : ''}
          </div>`
@@ -255,17 +276,41 @@ export class CredBilletsComponent implements OnInit, OnDestroy {
           <div style="color: #6B7280; font-size: 14px; margin-top: 4px;">${billet.compagnie} • ${billet.trajet}</div>
           ${qrHtml}
           <div style="margin-top: 10px;">
-            <span class="badge ${badgeClass}" style="font-size: 14px; padding: 6px 12px;">
-              ${billet.qrStatus || billet.status}
+            <span class="badge ${badgeClass}" style="font-size: 14px; padding: 6px 12px; text-transform: uppercase;">
+              ${this.formatStatusFr(billet.qrStatus || billet.status)}
             </span>
           </div>
           ${refusalHtml}
           ${controlInfoHtml}
-          <div style="margin-top: 12px; color: #9CA3AF; font-size: 12px;">Date de voyage : ${billet.dateValidite}</div>
+          <div style="margin-top: 12px; color: #9CA3AF; font-size: 12px;">Date de voyage : ${this.formatDateToFr(billet.dateValidite)}</div>
         </div>
       `,
       showCloseButton: true,
       showConfirmButton: false,
     });
+  }
+
+  formatDateToFr(dateStr: string): string {
+    if (!dateStr) return '';
+    try {
+      const parts = dateStr.split('-');
+      if (parts.length === 3) {
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      }
+      return dateStr;
+    } catch {
+      return dateStr;
+    }
+  }
+
+  formatStatusFr(status: string): string {
+    if (!status) return 'INCONNU';
+    const s = status.toUpperCase();
+    if (s === 'SCANNED' || s === 'SCANNE' || s === 'USED' || s === 'CONSOMMÉ' || s === 'CONSOMME') return 'Scanné';
+    if (s === 'EXPIRED' || s === 'EXPIRE') return 'Expiré';
+    if (s === 'REFUSED' || s === 'REJECTED' || s === 'REFUSE' || s === 'REFUSÉ') return 'Refusé';
+    if (s === 'VALID' || s === 'VALIDE') return 'Valide';
+    if (s === 'CANCELLED' || s === 'ANNULE' || s === 'ANNULÉ') return 'Annulé';
+    return status;
   }
 }

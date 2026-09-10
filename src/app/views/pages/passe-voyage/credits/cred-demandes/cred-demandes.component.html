@@ -200,9 +200,12 @@
                   </div>
                 </td>
                 <td class="text-center">
-                  <span class="badge" [ngClass]="{'bg-success': req.score >= 80, 'bg-warning': req.score >= 50 && req.score < 80, 'bg-danger': req.score < 50}">
-                    {{ req.score }} / 100
+                  <span class="badge" [ngClass]="{'bg-warning': req.profileType === 'VIP', 'bg-info': req.profileType === 'STANDARD', 'bg-secondary': req.profileType === 'NEW_USER' || !req.profileType}">
+                    {{ req.profileType === 'VIP' ? 'VIP' : (req.profileType === 'STANDARD' ? 'Standard' : 'Nouveau') }}
                   </span>
+                  <div class="text-muted small mt-1 fw-bold">
+                    Score: {{ req.score }} pt(s)
+                  </div>
                 </td>
                 <td>
                   <div class="fw-bold text-dark" style="font-size: 13px;">{{ req.dateOnly }}</div>
@@ -214,6 +217,9 @@
                   <span class="badge" [ngClass]="{'bg-info': req.statut === 'En attente', 'bg-success': req.statut === 'Approuvé', 'bg-danger': req.statut === 'Rejeté'}">
                     {{ req.statut }}
                   </span>
+                  <div class="text-danger small mt-1 fw-bold" *ngIf="req.statut === 'Approuvé' && req.repaymentDueDate">
+                    <i class="feather icon-alert-circle" style="font-size: 11px;"></i> Limite: {{ req.repaymentDueDate }}
+                  </div>
                 </td>
                 <td class="text-center">
                   <div class="d-flex justify-content-center align-items-center gap-1">

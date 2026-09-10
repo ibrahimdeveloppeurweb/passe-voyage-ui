@@ -1,0 +1,127 @@
+<div class="row mb-4">
+  <div class="col-md-3 grid-margin stretch-card mb-md-0 mb-3">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #0d6efd !important;">
+      <div class="card-body p-3">
+        <p class="text-muted fs-11px mb-1 text-uppercase">Fonds Total Alloué</p>
+        <h4 class="fw-bold mb-1 text-dark">{{ fondsTotal }}</h4>
+        <p class="text-muted fs-12px mb-0">Cumul des allocations</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3 grid-margin stretch-card mb-md-0 mb-3">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #198754 !important;">
+      <div class="card-body p-3">
+        <p class="text-muted fs-11px mb-1 text-uppercase">Solde Restant</p>
+        <h4 class="fw-bold text-success mb-1">{{ soldeRestant }}</h4>
+        <p class="text-muted fs-12px mb-0">Disponible pour les scans</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3 grid-margin stretch-card mb-md-0 mb-3">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #6f42c1 !important;">
+      <div class="card-body p-3">
+        <p class="text-muted fs-11px mb-1 text-uppercase">Consommation</p>
+        <h4 class="fw-bold mb-1 text-dark">{{ consommation }}</h4>
+        <p class="text-muted fs-12px mb-0">Déduit par les billets</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3 grid-margin stretch-card mb-md-0 mb-3">
+    <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #fd7e14 !important;">
+      <div class="card-body p-3">
+        <p class="text-muted fs-11px mb-1 text-uppercase">Taux D'Utilisation</p>
+        <h4 class="fw-bold mb-1 text-dark">{{ tauxUtilisation }}</h4>
+        <div class="progress mt-2" style="height: 4px;">
+          <div class="progress-bar" role="progressbar" style="background-color: #dee2e6; width: 100%" [style.width.%]="100">
+             <!-- To simulate the grey bar shown in the screenshot, I'll use background gradient -->
+             <div style="background-color: #6c757d; height: 100%; transition: width 0.3s;" [style.width.%]="tauxProgress"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-12 grid-margin stretch-card">
+    <div class="card shadow-sm border-0">
+      <div class="card-body">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+          <div>
+            <h5 class="card-title fw-bold mb-1">Journal Comptable des Mouvements</h5>
+            <p class="text-muted fs-13px m-0">Historique chronologique des crédits (rechargements) et débits (scans de billets).</p>
+          </div>
+          
+          <div class="d-flex align-items-center mt-3 mt-md-0">
+            <div class="input-group input-group-sm me-2" style="width: 200px;">
+              <span class="input-group-text bg-light border-end-0"><i class="feather icon-search text-muted" style="font-size:12px;"></i></span>
+              <input type="text" class="form-control border-start-0 bg-light px-1" placeholder="Référence, motif, agent..." [(ngModel)]="searchTerm" (keyup)="applyFilters()">
+            </div>
+            <select class="form-select form-select-sm me-2" style="width: 170px;" [(ngModel)]="typeFilter" (change)="applyFilters()">
+              <option value="">Tous les mouvements</option>
+              <option value="Debits">Débit (Scans)</option>
+              <option value="Credits">Crédit (Recharge)</option>
+            </select>
+            <button class="btn btn-sm btn-outline-secondary d-flex align-items-center justify-content-center" style="width: 31px; height: 31px; padding: 0;" (click)="refreshData()">
+              <i class="feather icon-refresh-cw" style="font-size:14px;"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover mb-0" style="min-width: 900px;">
+            <thead>
+              <tr>
+                <th class="text-muted fw-bold fs-11px pb-3">DATE & HEURE</th>
+                <th class="text-muted fw-bold fs-11px pb-3">TYPE MOUVEMENT</th>
+                <th class="text-muted fw-bold fs-11px pb-3">RÉFÉRENCE & DESCRIPTION</th>
+                <th class="text-muted fw-bold fs-11px pb-3 text-end">MONTANT (XOF)</th>
+                <th class="text-muted fw-bold fs-11px pb-3 text-end">SOLDE COMPTABLE APRÈS</th>
+                <th class="text-muted fw-bold fs-11px pb-3">AUTEUR / ORIGINE</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let trx of filteredTransactions" class="align-middle">
+                <td>
+                  <span class="fs-13px fw-bold text-dark d-flex align-items-center">
+                    <i class="feather icon-calendar me-2 text-muted"></i> {{ trx.date }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge border-0 rounded-pill {{ trx.typeClass }} px-3 py-1 fs-11px fw-bold d-inline-flex align-items-center" style="letter-spacing: 0;">
+                    <i class="feather {{ trx.icon }} me-1" style="font-size: 11px;"></i> {{ trx.typeBadge }}
+                  </span>
+                </td>
+                <td>
+                  <strong class="fs-13px text-dark d-block mb-1">{{ trx.ref }}</strong>
+                  <span class="text-muted fs-11px d-block text-truncate" style="max-width: 320px;" title="{{ trx.desc }}">{{ trx.desc }}</span>
+                </td>
+                <td class="text-end">
+                  <span class="fw-bold fs-13px {{ trx.amountClass }}">
+                    {{ trx.amount }}
+                  </span>
+                </td>
+                <td class="text-end">
+                  <span class="fw-bold fs-13px text-dark">{{ trx.balanceAfter }}</span>
+                </td>
+                <td>
+                  <span class="fs-12px fw-bold text-dark d-flex align-items-center">
+                    <i class="feather icon-user me-2 text-muted"></i> {{ trx.author }}
+                  </span>
+                </td>
+              </tr>
+              <tr *ngIf="filteredTransactions.length === 0">
+                <td colspan="6" class="text-center text-muted py-4 fs-13px">Aucun mouvement trouvé.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

@@ -27,6 +27,7 @@ export class AdminSettingsComponent implements OnInit, OnDestroy {
     this.settingsForm = this.formBuilder.group({
       fraisServiceTicket: [600, [Validators.required, Validators.min(0)]],
       delaiOptionStandard: [14, [Validators.required, Validators.min(1)]],
+      dureeExpirationBillet: [0, [Validators.required, Validators.min(0)]],
       reserveFinanciereInitiale: ['10 000 000', [Validators.required]],
       cleApiSmsNotification: ['', [Validators.required]]
     });
@@ -48,6 +49,7 @@ export class AdminSettingsComponent implements OnInit, OnDestroy {
             this.settingsForm.patchValue({
               fraisServiceTicket: res.data.fraisServiceTicket ?? 600,
               delaiOptionStandard: res.data.delaiOptionStandard ?? 14,
+              dureeExpirationBillet: res.data.dureeExpirationBillet ?? 0,
               reserveFinanciereInitiale: res.data.reserveFinanciereInitiale ?? '10 000 000',
               cleApiSmsNotification: res.data.cleApiSmsNotification ?? ''
             }, { emitEvent: false });

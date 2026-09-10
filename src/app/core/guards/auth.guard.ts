@@ -7,7 +7,18 @@ export const authGuard: CanActivateFn = (route: ActivatedRouteSnapshot, state: R
   const auth = inject(AuthService);
 
   if (auth.isLoggedIn()) {
-    // If the user is logged in, then return true
+    const role = (auth.getRole() || '').toLowerCase();
+    const perms = auth.getPermissions() || [];
+    
+    const isCompagnie = role.includes('compagnie') || role.includes('partenaire') || perms.includes('MENU_COMPAGNIE_DASHBOARD');
+    const hasGrandDashboard = perms.includes('FULL_ACCESS') || perms.includes('MENU_DASHBOARD');
+
+    // Protect passe-voyage admin routes from company users
+    if (state.url.startsWith('/passe-voyage') && isCompagnie && !hasGrandDashboard) {
+      router.navigate(['/espace-compagnie/dashboard']);
+      return false;
+    }
+
     return true;
   }
 

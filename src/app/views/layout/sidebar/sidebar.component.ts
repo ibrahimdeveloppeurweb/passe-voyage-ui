@@ -9,6 +9,7 @@ import { MENU } from './menu';
 import { MenuItem } from './menu.model';
 
 import { FeatherIconDirective } from '../../../core/feather-icon/feather-icon.directive';
+import { AuthService } from '../../../core/services/auth/auth.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -30,7 +31,12 @@ export class SidebarComponent implements OnInit, AfterViewInit {
   menuItems: MenuItem[] = [];
   @ViewChild('sidebarMenu') sidebarMenu: ElementRef;
 
-  constructor(@Inject(DOCUMENT) private document: Document, private renderer: Renderer2, router: Router) { 
+  constructor(
+    @Inject(DOCUMENT) private document: Document, 
+    private renderer: Renderer2, 
+    router: Router,
+    private authService: AuthService
+  ) { 
     router.events.forEach((event) => {
       if (event instanceof NavigationEnd) {
 
@@ -51,7 +57,69 @@ export class SidebarComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
-    this.menuItems = MENU;
+    const userPermissions = this.authService.getPermissions();
+    
+    // 1. Filtrer les menus et sous-menus en fonction de la permission
+    const rawFiltered: MenuItem[] = [];
+    
+    MENU.forEach(item => {
+      let hasAccess = false;
+      if (!item.permission) {
+        hasAccess = true; // isTitle (no permission)
+      } else {
+        hasAccess = userPermissions.includes(item.permission);
+      }
+
+      // Copier l'item pour ne pas modifier la constante globale MENU
+      const clonedItem = { ...item };
+
+      if (clonedItem.label === 'Espace Compagnie') {
+        const companyName = this.authService.getCompanyName();
+        if (companyName) {
+           clonedItem.label = companyName.toUpperCase();
+        }
+      }
+
+      if (clonedItem.subItems) {
+        clonedItem.subItems = clonedItem.subItems.filter((sub: any) => {
+          if (!sub.permission) return true;
+          return userPermissions.includes(sub.permission);
+        });
+        
+        // Si l'utilisateur a accès à au moins un sous-menu, on affiche le parent obligatoirement !
+        if (clonedItem.subItems.length > 0) {
+          hasAccess = true;
+        }
+      }
+
+      if (hasAccess) {
+        // Ne pas ajouter les parents vides (sauf les titres, traités au nettoyage final)
+        if (clonedItem.subItems && clonedItem.subItems.length === 0) {
+          // Si c'est un parent et qu'il n'y a plus de subItems après filtrage, on le cache
+          return;
+        }
+        rawFiltered.push(clonedItem);
+      }
+    });
+
+    // 2. Nettoyer les Titres vides (ex: si aucun sous-menu d'un module n'est visible)
+    const finalFiltered: MenuItem[] = [];
+    for (let i = 0; i < rawFiltered.length; i++) {
+        const item = rawFiltered[i];
+        if (item.isTitle) {
+            let hasChild = false;
+            for(let j = i + 1; j < rawFiltered.length; j++) {
+                if (rawFiltered[j].isTitle) break;
+                hasChild = true;
+                break;
+            }
+            if (hasChild) finalFiltered.push(item);
+        } else {
+            finalFiltered.push(item);
+        }
+    }
+    
+    this.menuItems = finalFiltered;
 
     /**
      * Sidebar-folded on desktop (min-width:992px and max-width: 1199px)

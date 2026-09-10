@@ -60,7 +60,23 @@ export class LoginComponent implements OnInit {
     this.auth.login(this.loginForm.value).subscribe({
       next: () => {
         this.loading = false;
-        this.router.navigate([this.returnUrl]);
+        
+        let target = this.returnUrl;
+        
+        // S'il s'agit de la racine par défaut
+        if (target === '/passe-voyage' || target === '/') {
+          const role = (this.auth.getRole() || '').toLowerCase();
+          const perms = this.auth.getPermissions() || [];
+          
+          const isCompagnie = role.includes('compagnie') || role.includes('partenaire') || perms.includes('MENU_COMPAGNIE_DASHBOARD');
+          const hasGrandDashboard = perms.includes('FULL_ACCESS') || perms.includes('MENU_DASHBOARD');
+
+          if (isCompagnie && !hasGrandDashboard) {
+            target = '/espace-compagnie/dashboard';
+          }
+        }
+
+        this.router.navigate([target]);
       },
       error: () => {
         this.loading = false;

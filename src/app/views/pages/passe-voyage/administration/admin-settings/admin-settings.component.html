@@ -31,6 +31,20 @@
             </div>
           </div>
 
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Durée Expiration Billet (Jours)</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="feather icon-calendar"></i></span>
+                <input type="number" class="form-control" formControlName="dureeExpirationBillet"
+                       [ngClass]="{'is-invalid': settingsForm.get('dureeExpirationBillet')?.invalid && settingsForm.get('dureeExpirationBillet')?.touched}">
+              </div>
+              <div *ngIf="settingsForm.get('dureeExpirationBillet')?.invalid && settingsForm.get('dureeExpirationBillet')?.touched" class="invalid-feedback d-block">
+                Ce champ est requis.
+              </div>
+            </div>
+          </div>
+
           <hr class="my-4">
           
           <h6 class="mb-3">Fonds de Roulement (Garantie UTB)</h6>

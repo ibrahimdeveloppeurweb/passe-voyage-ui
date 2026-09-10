@@ -30,6 +30,7 @@ export interface PassengerItem {
   solde?: number;
   totalDebt?: number;
   totalReimbursed?: number;
+  serviceFeeWallet?: number;
   isIdentified?: boolean;
   isBlacklisted?: boolean;
   statut?: string;

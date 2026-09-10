@@ -100,4 +100,82 @@ export class CompanyService {
       catchError((error: any) => throwError(() => error))
     );
   }
+
+  // Espace Compagnie API Calls - Portail Partenaire
+  getEspaceFinances(): Observable<any> {
+    if (!navigator.onLine) {
+      NoInternetHelper.internet();
+      return new Observable(obs => { obs.next(); obs.complete(); });
+    }
+    
+    return this.api._get(`${this.url}/espace/finances`).pipe(
+      map((response: any) => response),
+      catchError((error: any) => throwError(() => error))
+    );
+  }
+
+  getEspaceDashboard(filters: any = {}): Observable<any> {
+    if (!navigator.onLine) {
+      NoInternetHelper.internet();
+      return new Observable(obs => { obs.next(); obs.complete(); });
+    }
+    
+    let params = '?';
+    if (filters.period) params += `period=${filters.period}&`;
+    
+    return this.api._get(`${this.url}/espace/dashboard${params}`).pipe(
+      map((response: any) => response),
+      catchError((error: any) => throwError(() => error))
+    );
+  }
+
+  getEspaceActivitesGares(filters: any = {}): Observable<any> {
+    if (!navigator.onLine) {
+      NoInternetHelper.internet();
+      return new Observable(obs => { obs.next(); obs.complete(); });
+    }
+    
+    let params = '?';
+    if (filters.search) params += `search=${filters.search}&`;
+    if (filters.status) params += `status=${filters.status}&`;
+    if (filters.startDate) params += `startDate=${filters.startDate}&`;
+    if (filters.endDate) params += `endDate=${filters.endDate}&`;
+
+    return this.api._get(`${this.url}/espace/activites-gares${params}`).pipe(
+      map((response: any) => response),
+      catchError((error: any) => throwError(() => error))
+    );
+  }
+
+  getStationStats(uuid: string): Observable<any> {
+    if (!navigator.onLine) {
+      NoInternetHelper.internet();
+      return new Observable(obs => { obs.next(); obs.complete(); });
+    }
+    
+    return this.api._get(`${this.url}/espace/activites-gares/${uuid}/stats`).pipe(
+      map((response: any) => response),
+      catchError((error: any) => throwError(() => error))
+    );
+  }
+
+  getEspaceBilletsScannes(filters: any = {}): Observable<any> {
+    if (!navigator.onLine) {
+      NoInternetHelper.internet();
+      return new Observable(obs => { obs.next(); obs.complete(); });
+    }
+    
+    let params = '?';
+    if (filters.search) params += `search=${filters.search}&`;
+    if (filters.station) params += `station=${filters.station}&`;
+    if (filters.startDate) params += `startDate=${filters.startDate}&`;
+    if (filters.endDate) params += `endDate=${filters.endDate}&`;
+    if (filters.page) params += `page=${filters.page}&`;
+    if (filters.limit) params += `limit=${filters.limit}&`;
+
+    return this.api._get(`${this.url}/espace/billets-scannes${params}`).pipe(
+      map((response: any) => response),
+      catchError((error: any) => throwError(() => error))
+    );
+  }
 }

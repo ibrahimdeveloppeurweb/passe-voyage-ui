@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { FeatherIconDirective } from '../../../../../core/feather-icon/feather-icon.directive';
 import { UserService, UserItem } from '../../../../../core/services/user/user.service';
 import { PermissionService, Role } from '../../../../../core/services/permission/permission.service';
+import { CompanyService, CompanyItem } from '../../../../../core/services/company/company.service';
 import Swal from 'sweetalert2';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -18,6 +19,7 @@ import { Subject, takeUntil } from 'rxjs';
 export class AdminUsersComponent implements OnInit, OnDestroy {
   users: UserItem[] = [];
   roles: Role[] = [];
+  companies: CompanyItem[] = [];
 
   isLoading: boolean = false;
   isSaving: boolean = false;
@@ -28,6 +30,7 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
     nom: '',
     email: '',
     roleUuid: '',
+    companyUuid: '',
     password: '',
     isEnabled: true
   };
@@ -37,17 +40,44 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
   constructor(
     private modalService: NgbModal,
     private userService: UserService,
-    private permissionService: PermissionService
+    private permissionService: PermissionService,
+    private companyService: CompanyService
   ) {}
 
   ngOnInit(): void {
     this.loadData();
+    this.loadCompanies();
   }
 
   loadData(): void {
     this.isLoading = true;
     this.loadRoles();
     this.loadUsers();
+  }
+
+  loadCompanies(): void {
+    this.companyService.getList()
+      .pipe(takeUntil(this.unsubscribeAll$))
+      .subscribe({
+        next: (res: any) => {
+          let parsed = res;
+          if (typeof res === 'string') {
+            try { parsed = JSON.parse(res); } catch (e) {}
+          }
+          
+          let list: CompanyItem[] = [];
+          if (Array.isArray(parsed)) {
+            list = parsed;
+          } else if (parsed && parsed.data && Array.isArray(parsed.data)) {
+            list = parsed.data;
+          }
+          this.companies = list;
+        },
+        error: (err) => {
+          console.error("Erreur lors du chargement des compagnies", err);
+          this.companies = [];
+        }
+      });
   }
 
   loadRoles(): void {
@@ -114,10 +144,11 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
       nom: '',
       email: '',
       roleUuid: this.roles.length > 0 ? (this.roles[0].uuid || this.roles[0].nom || '') : '',
+      companyUuid: '',
       password: '',
       isEnabled: true
     };
-    this.modalService.open(content, { centered: true });
+    this.modalService.open(content, { centered: true, size: 'lg' });
   }
 
   openEditModal(content: TemplateRef<any>, user: UserItem): void {
@@ -136,11 +167,20 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
       nom: user.fullName || user.nom || '',
       email: user.email || user.username || '',
       roleUuid: roleVal,
+      companyUuid: (user as any).companyUuid || '',
       password: '',
       isEnabled: user.isEnabled !== false
     };
 
-    this.modalService.open(content, { centered: true });
+    this.modalService.open(content, { centered: true, size: 'lg' });
+  }
+
+  isCompanyRole(): boolean {
+    if (!this.userForm.roleUuid) return false;
+    const selectedRole = this.roles.find(r => (r.uuid || r.nom) === this.userForm.roleUuid);
+    if (!selectedRole) return false;
+    const roleName = (selectedRole.nom || '').toLowerCase();
+    return roleName.includes('compagnie') || roleName.includes('partenaire') || roleName.includes('espace');
   }
 
   submitUserForm(modal: any): void {
@@ -152,6 +192,14 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (this.isCompanyRole() && !this.userForm.companyUuid) {
+      Swal.fire({
+        toast: true, position: 'top-end', showConfirmButton: false, timer: 3000,
+        icon: 'warning', title: 'Veuillez obligatoiramente sélectionner la compagnie d\'affectation.'
+      });
+      return;
+    }
+
     this.isSaving = true;
 
     const payload: any = {
@@ -159,6 +207,7 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
       email: this.userForm.email.trim(),
       roles: this.userForm.roleUuid ? [{ uuid: this.userForm.roleUuid }] : [],
       role: this.userForm.roleUuid,
+      companyUuid: this.isCompanyRole() ? this.userForm.companyUuid : null,
       isEnabled: this.userForm.isEnabled
     };
 
